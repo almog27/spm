@@ -17,14 +17,13 @@ export const Footer = () => {
             width: 18,
             height: 18,
             borderRadius: 4,
-            background:
-              'linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dim) 100%)',
+            background: '#0deaff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontFamily: 'var(--font-mono)',
-            fontSize: 9,
-            fontWeight: 700,
+            fontFamily: "'Alfa Slab One', serif",
+            fontSize: 10,
+            fontWeight: 400,
             color: 'var(--color-bg)',
           }}
         >
@@ -32,10 +31,10 @@ export const Footer = () => {
         </div>
         <span
           style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 14,
-            color: 'var(--color-accent)',
-            fontWeight: 600,
+            fontFamily: "'Alfa Slab One', serif",
+            fontSize: 15,
+            fontWeight: 400,
+            color: '#0deaff',
           }}
         >
           spm

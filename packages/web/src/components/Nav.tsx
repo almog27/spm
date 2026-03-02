@@ -51,14 +51,13 @@ export const Nav = ({
             width: 26,
             height: 26,
             borderRadius: 5,
-            background:
-              'linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dim) 100%)',
+            background: '#0deaff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontFamily: 'var(--font-mono)',
-            fontSize: 12,
-            fontWeight: 700,
+            fontFamily: "'Alfa Slab One', serif",
+            fontSize: 14,
+            fontWeight: 400,
             color: 'var(--color-bg)',
           }}
         >
@@ -66,10 +65,10 @@ export const Nav = ({
         </div>
         <span
           style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 16,
-            fontWeight: 700,
-            color: 'var(--color-accent)',
+            fontFamily: "'Alfa Slab One', serif",
+            fontSize: 18,
+            fontWeight: 400,
+            color: '#0deaff',
           }}
         >
           spm
