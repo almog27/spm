@@ -1,4 +1,6 @@
-export type TrustTier = 'official' | 'verified' | 'scanned' | 'registered';
+import type { TrustTier } from '@spm/ui';
+
+export type { TrustTier };
 
 export type SkillStatus = 'published' | 'held' | 'blocked' | 'yanked' | 'deprecated';
 
@@ -87,13 +89,6 @@ export interface UserError {
   status: ErrorStatus;
   resolution?: string;
 }
-
-export const TRUST_CONFIG: Record<TrustTier, { label: string; color: string; checks: string }> = {
-  official: { label: 'Official', color: 'accent', checks: '\u2713\u2713\u2713' },
-  verified: { label: 'Verified', color: 'accent', checks: '\u2713\u2713' },
-  scanned: { label: 'Scanned', color: 'blue', checks: '\u2713' },
-  registered: { label: 'Registered', color: 'text-dim', checks: '\u25CB' },
-};
 
 export const FLAGGED_QUEUE: FlaggedItem[] = [
   {

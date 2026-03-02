@@ -1,5 +1,5 @@
 import { SCAN_STATS } from '../data/mock';
-import { SectionCard, StatBox } from './ui';
+import { Card, StatBox } from '@spm/ui';
 
 export const ScanAnalytics = () => {
   const passRate = ((SCAN_STATS.passed / SCAN_STATS.total) * 100).toFixed(1);
@@ -23,7 +23,7 @@ export const ScanAnalytics = () => {
       {/* Charts row */}
       <div style={{ display: 'flex', gap: 16 }}>
         {/* Weekly publishes */}
-        <SectionCard style={{ flex: 1, padding: '18px 22px' }}>
+        <Card style={{ flex: 1, padding: '18px 22px' }}>
           <div
             style={{
               fontFamily: 'var(--font-sans)',
@@ -81,10 +81,10 @@ export const ScanAnalytics = () => {
               );
             })}
           </div>
-        </SectionCard>
+        </Card>
 
         {/* Block rate trend */}
-        <SectionCard style={{ flex: 1, padding: '18px 22px' }}>
+        <Card style={{ flex: 1, padding: '18px 22px' }}>
           <div
             style={{
               fontFamily: 'var(--font-sans)',
@@ -142,11 +142,11 @@ export const ScanAnalytics = () => {
               );
             })}
           </div>
-        </SectionCard>
+        </Card>
       </div>
 
       {/* Outcome breakdown */}
-      <SectionCard style={{ marginTop: 16, padding: '18px 22px' }}>
+      <Card style={{ marginTop: 16, padding: '18px 22px' }}>
         <div
           style={{
             fontFamily: 'var(--font-sans)',
@@ -216,7 +216,7 @@ export const ScanAnalytics = () => {
             </div>
           ))}
         </div>
-      </SectionCard>
+      </Card>
     </div>
   );
 };

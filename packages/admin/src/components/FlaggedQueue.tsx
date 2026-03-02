@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { FLAGGED_QUEUE, SCAN_STATS, TRUST_CONFIG } from '../data/mock';
-import { ActionButton, Badge, SectionCard, StatBox, TrustBadge } from './ui';
+import { FLAGGED_QUEUE, SCAN_STATS } from '../data/mock';
+import { Badge, Button, Card, StatBox, TRUST_CONFIG, TrustBadge } from '@spm/ui';
 
 export const FlaggedQueue = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export const FlaggedQueue = () => {
       {/* Queue items */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {FLAGGED_QUEUE.map((item) => (
-          <SectionCard key={item.id}>
+          <Card key={item.id}>
             {/* Header */}
             <div
               onClick={() => setExpanded(expanded === item.id ? null : item.id)}
@@ -179,17 +179,17 @@ export const FlaggedQueue = () => {
 
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <ActionButton
+                  <Button
                     label={`${TRUST_CONFIG.official.checks.charAt(0)} Approve`}
                     color="accent"
                   />
-                  <ActionButton label={'\u2717 Reject'} color="red" />
-                  <ActionButton label="View full SKILL.md" color="blue" />
-                  <ActionButton label="Contact author" color="text-dim" />
+                  <Button label={'\u2717 Reject'} color="red" />
+                  <Button label="View full SKILL.md" color="blue" />
+                  <Button label="Contact author" color="text-dim" />
                 </div>
               </div>
             )}
-          </SectionCard>
+          </Card>
         ))}
       </div>
 

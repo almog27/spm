@@ -1,4 +1,4 @@
-import { TRUST_CONFIG, type TrustTier } from './mock-data';
+import { TRUST_CONFIG, type TrustTier } from '@spm/ui';
 
 interface TrustProgressProps {
   currentTier: TrustTier;

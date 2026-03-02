@@ -1,31 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { SKILLS_DB, TRUST_CONFIG } from '../data/mock';
-import { TrustBadge } from '../components/TrustBadge';
-
-const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-
-  return (
-    <span
-      onClick={() => {
-        navigator.clipboard?.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
-      style={{
-        fontFamily: 'var(--font-mono)',
-        fontSize: 11,
-        cursor: 'pointer',
-        padding: '2px 6px',
-        userSelect: 'none',
-        color: copied ? '#10b981' : '#64748b',
-      }}
-    >
-      {copied ? '\u2713 copied' : 'copy'}
-    </span>
-  );
-};
+import { SKILLS_DB } from '../data/mock';
+import { CopyButton, TrustBadge, TRUST_CONFIG } from '@spm/ui';
 
 const cardStyle: React.CSSProperties = {
   padding: 14,

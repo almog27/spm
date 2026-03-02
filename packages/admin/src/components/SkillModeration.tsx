@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ALL_SKILLS_ADMIN, TRUST_CONFIG } from '../data/mock';
-import { ActionButton, SectionCard, SearchInput, StatusBadge } from './ui';
+import { ALL_SKILLS_ADMIN } from '../data/mock';
+import { Button, Card, SearchInput, StatusBadge, TRUST_CONFIG } from '@spm/ui';
 
 export const SkillModeration = () => {
   const [search, setSearch] = useState('');
@@ -45,7 +45,7 @@ export const SkillModeration = () => {
         </div>
       </div>
 
-      <SectionCard>
+      <Card>
         {/* Header row */}
         <div
           style={{
@@ -119,7 +119,7 @@ export const SkillModeration = () => {
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 11,
-                color: `var(--color-${TRUST_CONFIG[skill.trust].color})`,
+                color: TRUST_CONFIG[skill.trust].color,
               }}
             >
               {TRUST_CONFIG[skill.trust].checks}
@@ -145,12 +145,12 @@ export const SkillModeration = () => {
               {skill.published.slice(5)}
             </span>
             <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-              <ActionButton label="View" color="blue" small />
-              <ActionButton label="Yank" color="red" small />
+              <Button label="View" color="blue" small />
+              <Button label="Yank" color="red" small />
             </div>
           </div>
         ))}
-      </SectionCard>
+      </Card>
     </div>
   );
 };

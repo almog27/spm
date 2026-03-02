@@ -8,7 +8,7 @@ import {
   SORT_OPTIONS,
   type SkillFull,
 } from '../data/mock';
-import { TrustBadge } from '../components/TrustBadge';
+import { TrustBadge } from '@spm/ui';
 
 const SearchResultRow = ({ skill }: { skill: SkillFull }) => {
   return (

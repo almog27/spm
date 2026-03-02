@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FLAGGED_QUEUE, REPORTS, USER_ERRORS } from './data/mock';
-import { Badge, Tabs } from './components/ui';
+import { Badge, Tabs } from '@spm/ui';
 import { FlaggedQueue } from './components/FlaggedQueue';
 import { SkillModeration } from './components/SkillModeration';
 import { ScanAnalytics } from './components/ScanAnalytics';

@@ -1,5 +1,5 @@
 import { REPORTS } from '../data/mock';
-import { ActionButton, PriorityDot, SectionCard, StatBox, StatusBadge } from './ui';
+import { Button, Card, PriorityDot, StatBox, StatusBadge } from '@spm/ui';
 
 export const ReportsTab = () => {
   const openCount = REPORTS.filter((r) => r.status === 'open').length;
@@ -24,7 +24,7 @@ export const ReportsTab = () => {
       {/* Report cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {REPORTS.map((report) => (
-          <SectionCard key={report.id} style={{ padding: '14px 18px' }}>
+          <Card key={report.id} style={{ padding: '14px 18px' }}>
             <div
               style={{
                 display: 'flex',
@@ -86,12 +86,12 @@ export const ReportsTab = () => {
                 Reported by @{report.reporter}
               </span>
               <div style={{ display: 'flex', gap: 6 }}>
-                <ActionButton label="Investigate" color="blue" small />
-                <ActionButton label="Dismiss" color="text-dim" small />
-                <ActionButton label="Yank skill" color="red" small />
+                <Button label="Investigate" color="blue" small />
+                <Button label="Dismiss" color="text-dim" small />
+                <Button label="Yank skill" color="red" small />
               </div>
             </div>
-          </SectionCard>
+          </Card>
         ))}
       </div>
     </div>

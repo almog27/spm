@@ -1,11 +1,6 @@
-export const TRUST_CONFIG = {
-  official: { label: 'Official', color: 'var(--color-accent)', checks: '\u2713\u2713\u2713' },
-  verified: { label: 'Verified', color: 'var(--color-accent)', checks: '\u2713\u2713' },
-  scanned: { label: 'Scanned', color: 'var(--color-blue)', checks: '\u2713' },
-  registered: { label: 'Registered', color: 'var(--color-text-dim)', checks: '\u25cb' },
-} as const;
+import { type TrustTier } from '@spm/ui';
 
-export type TrustTier = keyof typeof TRUST_CONFIG;
+export type { TrustTier };
 
 export interface Author {
   username: string;

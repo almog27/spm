@@ -7,17 +7,14 @@ import {
   RECENT_ACTIVITY,
   PUBLISH_HISTORY,
   AGENT_BREAKDOWN,
-  TRUST_CONFIG,
 } from './dashboard/mock-data';
-import type { TrustTier } from './dashboard/mock-data';
-import { StatCard } from './dashboard/StatCard';
+import { StatBox, Tabs, TRUST_CONFIG, type TrustTier } from '@spm/ui';
 import { MiniChart } from './dashboard/MiniChart';
 import { SkillRow } from './dashboard/SkillRow';
 import { ActivityItem } from './dashboard/ActivityItem';
 import { PublishRow } from './dashboard/PublishRow';
 import { TrustProgress } from './dashboard/TrustProgress';
 import { BarSegment } from './dashboard/BarSegment';
-import { DashboardTabs } from './dashboard/DashboardTabs';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -525,13 +522,13 @@ export const Dashboard = () => {
 
       {/* Stat cards */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-        <StatCard
+        <StatBox
           label="Total downloads"
           value={`${(AUTHOR.totalDownloads / 1000).toFixed(1)}k`}
           sub={`\u2191 ${AUTHOR.weeklyDownloads.toLocaleString()} this week`}
         />
-        <StatCard label="Skills published" value={MY_SKILLS.length} />
-        <StatCard
+        <StatBox label="Skills published" value={MY_SKILLS.length} />
+        <StatBox
           label="Avg rating"
           value={`\u2605 ${AUTHOR.avgRating}`}
           sub={`${AUTHOR.totalReviews} reviews`}
@@ -562,7 +559,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Tabs */}
-      <DashboardTabs tabs={TABS} active={tab} onChange={setTab} />
+      <Tabs tabs={TABS} active={tab} onChange={setTab} />
 
       {/* Tab content */}
       {tab === 'overview' && <OverviewTab onViewAllSkills={() => setTab('skills')} />}

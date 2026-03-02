@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { SKILLS_DB } from '../data/mock';
-import { TrustBadge } from '../components/TrustBadge';
+import { TrustBadge } from '@spm/ui';
 
 export const AuthorProfile = () => {
   const { username } = useParams<{ username: string }>();

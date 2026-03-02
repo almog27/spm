@@ -11,7 +11,7 @@ import {
 } from '../data/mock';
 import { SkillCard } from '../components/SkillCard';
 import { SkillRow } from '../components/SkillRow';
-import { TrustBadge } from '../components/TrustBadge';
+import { TrustBadge } from '@spm/ui';
 
 type TrendingTab = 'featured' | 'rising' | 'most-installed' | 'new';
 

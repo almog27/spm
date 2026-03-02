@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { USERS_ADMIN, TRUST_CONFIG, type TrustTier } from '../data/mock';
+import { USERS_ADMIN } from '../data/mock';
 import {
-  ActionButton,
   Badge,
+  Button,
+  Card,
   FilterDropdown,
   FilterTag,
   SearchInput,
-  SectionCard,
   StatBox,
   StatusBadge,
-} from './ui';
+  TRUST_CONFIG,
+  type TrustTier,
+} from '@spm/ui';
 
 export const UsersTab = () => {
   const [search, setSearch] = useState('');
@@ -244,18 +246,18 @@ export const UsersTab = () => {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <ActionButton
+            <Button
               label="Confirm"
               color={isDestructive ? 'red' : 'accent'}
               onClick={() => setConfirmAction(null)}
             />
-            <ActionButton label="Cancel" color="text-dim" onClick={() => setConfirmAction(null)} />
+            <Button label="Cancel" color="text-dim" onClick={() => setConfirmAction(null)} />
           </div>
         </div>
       )}
 
       {/* Table */}
-      <SectionCard>
+      <Card>
         <div
           style={{
             display: 'grid',
@@ -343,7 +345,7 @@ export const UsersTab = () => {
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 11,
-                color: `var(--color-${TRUST_CONFIG[user.trust].color})`,
+                color: TRUST_CONFIG[user.trust].color,
               }}
             >
               {TRUST_CONFIG[user.trust].checks} {TRUST_CONFIG[user.trust].label}
@@ -376,7 +378,7 @@ export const UsersTab = () => {
               }}
             >
               {user.role === 'user' ? (
-                <ActionButton
+                <Button
                   label="Make admin"
                   color="red"
                   small
@@ -388,7 +390,7 @@ export const UsersTab = () => {
                   }
                 />
               ) : (
-                <ActionButton
+                <Button
                   label="Revoke admin"
                   color="yellow"
                   small
@@ -401,7 +403,7 @@ export const UsersTab = () => {
                 />
               )}
               {user.status !== 'suspended' && (
-                <ActionButton
+                <Button
                   label="Suspend"
                   color="red"
                   small
@@ -416,7 +418,7 @@ export const UsersTab = () => {
             </div>
           </div>
         ))}
-      </SectionCard>
+      </Card>
     </div>
   );
 };

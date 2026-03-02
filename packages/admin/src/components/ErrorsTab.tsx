@@ -1,5 +1,5 @@
 import { USER_ERRORS } from '../data/mock';
-import { ActionButton, Badge, SectionCard, StatBox, StatusBadge } from './ui';
+import { Badge, Button, Card, StatBox, StatusBadge } from '@spm/ui';
 
 const TYPE_COLORS: Record<string, string> = {
   install_fail: 'red',
@@ -37,7 +37,7 @@ export const ErrorsTab = () => {
           const typeColor = TYPE_COLORS[err.type] ?? 'text-dim';
 
           return (
-            <SectionCard key={err.id} style={{ padding: '14px 18px' }}>
+            <Card key={err.id} style={{ padding: '14px 18px' }}>
               {/* Header */}
               <div
                 style={{
@@ -135,14 +135,14 @@ export const ErrorsTab = () => {
                     </span>
                   ) : (
                     <>
-                      <ActionButton label="Investigate" color="blue" small />
-                      <ActionButton label="Resolve" color="accent" small />
-                      <ActionButton label="Won't fix" color="text-dim" small />
+                      <Button label="Investigate" color="blue" small />
+                      <Button label="Resolve" color="accent" small />
+                      <Button label="Won't fix" color="text-dim" small />
                     </>
                   )}
                 </div>
               </div>
-            </SectionCard>
+            </Card>
           );
         })}
       </div>
