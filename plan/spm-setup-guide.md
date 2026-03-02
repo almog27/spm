@@ -83,12 +83,12 @@ Same as above but pointing to `packages/admin/` with its own Pages project.
 
 **Pricing (free tier):**
 
-| Service | Free Tier | Paid |
-|---------|-----------|------|
-| Workers | 100K requests/day | $5/mo for 10M requests/mo |
-| R2 | 10GB storage, 10M reads/mo | $0.015/GB storage, $0.36/M reads |
-| KV | 100K reads/day, 1K writes/day | $5/mo for 10M reads/mo |
-| Pages | Unlimited sites, 500 builds/mo | — |
+| Service | Free Tier                      | Paid                             |
+| ------- | ------------------------------ | -------------------------------- |
+| Workers | 100K requests/day              | $5/mo for 10M requests/mo        |
+| R2      | 10GB storage, 10M reads/mo     | $0.015/GB storage, $0.36/M reads |
+| KV      | 100K reads/day, 1K writes/day  | $5/mo for 10M reads/mo           |
+| Pages   | Unlimited sites, 500 builds/mo | —                                |
 
 Free tier is sufficient for development and early launch.
 
@@ -117,11 +117,11 @@ Free tier is sufficient for development and early launch.
 Neon provides a serverless HTTP driver (`@neondatabase/serverless`) that works in Cloudflare Workers. Regular `pg` uses TCP sockets which Workers don't support.
 
 ```typescript
-import { neon } from '@neondatabase/serverless'
-import { drizzle } from 'drizzle-orm/neon-http'
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 
-const sql = neon(env.DATABASE_URL)
-const db = drizzle(sql)
+const sql = neon(env.DATABASE_URL);
+const db = drizzle(sql);
 ```
 
 **Running migrations:**
@@ -143,11 +143,11 @@ neonctl branches create --name dev
 
 **Pricing (free tier):**
 
-| Feature | Free |
-|---------|------|
-| Storage | 0.5 GB |
-| Compute | 190 hours/mo (auto-suspends on idle) |
-| Branches | 10 |
+| Feature  | Free                                 |
+| -------- | ------------------------------------ |
+| Storage  | 0.5 GB                               |
+| Compute  | 190 hours/mo (auto-suspends on idle) |
+| Branches | 10                                   |
 
 More than enough for development. Scale plan is $19/mo when you need it.
 
@@ -175,7 +175,7 @@ More than enough for development. Scale plan is $19/mo when you need it.
 await fetch('https://api.resend.com/emails', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+    Authorization: `Bearer ${env.RESEND_API_KEY}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
@@ -184,15 +184,15 @@ await fetch('https://api.resend.com/emails', {
     subject: 'Verify your SPM account',
     html: verificationEmailHtml,
   }),
-})
+});
 ```
 
 **Pricing (free tier):**
 
-| Feature | Free |
-|---------|------|
-| Emails | 100/day, 3,000/mo |
-| Domains | 1 |
+| Feature | Free              |
+| ------- | ----------------- |
+| Emails  | 100/day, 3,000/mo |
+| Domains | 1                 |
 
 Sufficient for launch. Pro is $20/mo for 50K emails/mo.
 
@@ -300,12 +300,12 @@ ENVIRONMENT=development
 
 **How variables are loaded per environment:**
 
-| Environment | Source | How |
-|-------------|--------|-----|
-| Local dev | `packages/api/.dev.vars` | Auto-loaded by `wrangler dev` |
-| Local scripts | Root `.env` | Loaded by dotenv or turbo |
-| CI (GitHub Actions) | Repository secrets | Injected as `env:` in workflow |
-| Production | Cloudflare secrets | Set via `wrangler secret put` |
+| Environment         | Source                   | How                            |
+| ------------------- | ------------------------ | ------------------------------ |
+| Local dev           | `packages/api/.dev.vars` | Auto-loaded by `wrangler dev`  |
+| Local scripts       | Root `.env`              | Loaded by dotenv or turbo      |
+| CI (GitHub Actions) | Repository secrets       | Injected as `env:` in workflow |
+| Production          | Cloudflare secrets       | Set via `wrangler secret put`  |
 
 You never need a `.env` in production. Cloudflare encrypts secrets and injects them into the Worker at runtime via the `env` parameter:
 
@@ -314,8 +314,8 @@ export default {
   async fetch(request: Request, env: Env) {
     // env.DATABASE_URL, env.JWT_SECRET, etc.
     // injected by Cloudflare, not read from a file
-  }
-}
+  },
+};
 ```
 
 Wrangler's local dev mode does the same thing but reads from `.dev.vars` instead.
@@ -326,6 +326,7 @@ wrangler dev    # runs Workers locally with miniflare, loads .dev.vars
 ```
 
 This emulates R2, KV, and Workers locally. For the database, either:
+
 - Use a local Postgres (`docker run -p 5432:5432 postgres`)
 - Use a Neon dev branch (free)
 
