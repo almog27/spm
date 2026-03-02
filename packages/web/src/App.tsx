@@ -5,6 +5,9 @@ import { Search } from './pages/Search';
 import { SkillDetail } from './pages/SkillDetail';
 import { AuthorProfile } from './pages/AuthorProfile';
 import { Dashboard } from './pages/Dashboard';
+import { Docs } from './pages/Docs';
+import { CLI } from './pages/CLI';
+import { Publish } from './pages/Publish';
 
 export const App = () => {
   return (
@@ -16,6 +19,9 @@ export const App = () => {
           <Route path="/skills/:name" element={<SkillDetail />} />
           <Route path="/authors/:username" element={<AuthorProfile />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/cli" element={<CLI />} />
+          <Route path="/publish" element={<Publish />} />
         </Route>
       </Routes>
     </BrowserRouter>
