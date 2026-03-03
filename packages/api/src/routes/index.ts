@@ -10,6 +10,7 @@ import { resolveRoutes } from './resolve.js';
 import { reviewsRoutes } from './reviews.js';
 import { authorsRoutes } from './authors.js';
 import { reportsRoutes } from './reports.js';
+import { adminRoutes } from './admin.js';
 
 export const createRouter = () => {
   const router = new Hono<AppEnv>();
@@ -28,8 +29,8 @@ export const createRouter = () => {
   router.route('/', authorsRoutes);
   router.route('/', reportsRoutes);
 
-  // TODO: Phase 3+ routes
-  // router.route('/', adminRoutes);
+  // Admin routes
+  router.route('/', adminRoutes);
 
   return router;
 };
