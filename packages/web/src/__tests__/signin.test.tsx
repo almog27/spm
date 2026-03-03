@@ -1,16 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { SignIn } from '../pages/SignIn';
-import { useAuth } from '../context/AuthContext';
-import { requestDeviceCode } from '../lib/api';
+import { useAuth, requestDeviceCode } from '@spm/web-auth';
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../../../web-auth/src/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-vi.mock('../lib/api', () => ({
+vi.mock('../../../web-auth/src/api', () => ({
   requestDeviceCode: vi.fn(),
   pollToken: vi.fn(),
+  whoami: vi.fn(),
+  logout: vi.fn(),
   AuthPendingError: class AuthPendingError extends Error {
     constructor() {
       super('Authorization pending');
@@ -33,6 +34,7 @@ const unauthenticatedState = {
   token: null,
   isLoading: false,
   isAuthenticated: false,
+  isAdmin: false,
   signIn: vi.fn(),
   signOut: vi.fn(),
 };
@@ -49,6 +51,7 @@ const authenticatedState = {
   token: 'fake-token',
   isLoading: false,
   isAuthenticated: true,
+  isAdmin: false,
   signIn: vi.fn(),
   signOut: vi.fn(),
 };

@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { ProtectedRoute } from '../components/ProtectedRoute';
+import { AdminRoute } from '../components/AdminRoute';
 
-vi.mock('../../../web-auth/src/AuthContext', () => ({
+const mockSignOut = vi.fn();
+
+vi.mock('@spm/web-auth', () => ({
   useAuth: vi.fn(),
 }));
 
@@ -14,16 +16,16 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-const renderProtectedRoute = (initialPath = '/dashboard') =>
+const renderAdminRoute = (initialPath = '/') =>
   render(
     <MemoryRouter initialEntries={[initialPath]}>
       <Routes>
         <Route
-          path="/dashboard"
+          path="/"
           element={
-            <ProtectedRoute>
-              <div>Protected Content</div>
-            </ProtectedRoute>
+            <AdminRoute>
+              <div>Admin Content</div>
+            </AdminRoute>
           }
         />
         <Route path="/signin" element={<div>Sign In Page</div>} />
@@ -31,8 +33,8 @@ const renderProtectedRoute = (initialPath = '/dashboard') =>
     </MemoryRouter>,
   );
 
-describe('ProtectedRoute', () => {
-  it('shows "Loading..." when isLoading is true', () => {
+describe('AdminRoute', () => {
+  it('shows loading state while auth is loading', () => {
     mockedUseAuth.mockReturnValue({
       isLoading: true,
       isAuthenticated: false,
@@ -43,7 +45,7 @@ describe('ProtectedRoute', () => {
       signOut: vi.fn(),
     });
 
-    renderProtectedRoute();
+    renderAdminRoute();
 
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
@@ -59,13 +61,13 @@ describe('ProtectedRoute', () => {
       signOut: vi.fn(),
     });
 
-    renderProtectedRoute();
+    renderAdminRoute();
 
-    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    expect(screen.queryByText('Admin Content')).not.toBeInTheDocument();
     expect(screen.getByText('Sign In Page')).toBeInTheDocument();
   });
 
-  it('renders children when authenticated', () => {
+  it('shows Access Denied when authenticated but not admin', () => {
     mockedUseAuth.mockReturnValue({
       isLoading: false,
       isAuthenticated: true,
@@ -80,32 +82,41 @@ describe('ProtectedRoute', () => {
       },
       token: 'jwt_abc',
       signIn: vi.fn(),
-      signOut: vi.fn(),
+      signOut: mockSignOut,
     });
 
-    renderProtectedRoute();
+    renderAdminRoute();
 
-    expect(screen.getByText('Protected Content')).toBeInTheDocument();
-    expect(screen.queryByText('Sign In Page')).not.toBeInTheDocument();
+    expect(screen.getByText('Access Denied')).toBeInTheDocument();
+    expect(screen.getByText(/You do not have admin privileges/)).toBeInTheDocument();
+    expect(screen.queryByText('Admin Content')).not.toBeInTheDocument();
   });
 
-  it('passes current location in redirect state', () => {
+  it('calls signOut when clicking sign out on Access Denied screen', () => {
     mockedUseAuth.mockReturnValue({
       isLoading: false,
-      isAuthenticated: false,
+      isAuthenticated: true,
       isAdmin: false,
-      user: null,
-      token: null,
+      user: {
+        id: 'u1',
+        username: 'testuser',
+        github_id: 12345,
+        trust_tier: 'verified',
+        is_admin: false,
+        created_at: '2026-01-01T00:00:00Z',
+      },
+      token: 'jwt_abc',
       signIn: vi.fn(),
-      signOut: vi.fn(),
+      signOut: mockSignOut,
     });
 
-    renderProtectedRoute('/dashboard');
+    renderAdminRoute();
 
-    expect(screen.getByText('Sign In Page')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Sign out'));
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
   });
 
-  it('renders correct children content', () => {
+  it('renders children when authenticated and admin', () => {
     mockedUseAuth.mockReturnValue({
       isLoading: false,
       isAuthenticated: true,
@@ -123,23 +134,9 @@ describe('ProtectedRoute', () => {
       signOut: vi.fn(),
     });
 
-    render(
-      <MemoryRouter initialEntries={['/dashboard']}>
-        <Routes>
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <h1>Dashboard</h1>
-                <p>Welcome back</p>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </MemoryRouter>,
-    );
+    renderAdminRoute();
 
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Welcome back')).toBeInTheDocument();
+    expect(screen.getByText('Admin Content')).toBeInTheDocument();
+    expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
   });
 });

@@ -11,7 +11,7 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-vi.mock('../lib/api', () => ({
+vi.mock('../../../web-auth/src/api', () => ({
   whoami: vi.fn(),
   logout: vi.fn(),
 }));

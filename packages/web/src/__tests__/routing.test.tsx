@@ -12,7 +12,7 @@ import { Docs } from '../pages/Docs';
 import { CLI } from '../pages/CLI';
 import { Publish } from '../pages/Publish';
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../../../web-auth/src/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
@@ -52,6 +52,7 @@ const unauthState = {
   token: null,
   isLoading: false,
   isAuthenticated: false,
+  isAdmin: false,
   signIn: vi.fn(),
   signOut: vi.fn(),
 };
