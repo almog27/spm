@@ -2,6 +2,11 @@ name = "spm-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
+# Custom domain — routes all traffic from registry.skillpkg.dev to this Worker
+routes = [
+  { pattern = "registry.skillpkg.dev/*", zone_name = "skillpkg.dev" }
+]
+
 [vars]
 ENVIRONMENT = "production"
 
@@ -11,7 +16,7 @@ bucket_name = "spm-packages"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "<RATE_LIMIT_KV_ID>"
+id = "<RATE_LIMIT_KV_ID>" # Replace with: wrangler kv namespace create RATE_LIMIT
 
 [env.staging]
 name = "spm-api-staging"
