@@ -1,4 +1,4 @@
-name: Quality
+name: Pre-deploy
 
 on:
   push:
