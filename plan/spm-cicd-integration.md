@@ -391,14 +391,14 @@ jobs:
 
 The SPM CLI respects these environment variables in CI:
 
-| Variable        | Purpose                                               | Example                           |
-| --------------- | ----------------------------------------------------- | --------------------------------- |
-| `SPM_TOKEN`     | Auth token (alternative to `--token` flag)            | `spm_eyJhbG...`                   |
+| Variable        | Purpose                                               | Example                                |
+| --------------- | ----------------------------------------------------- | -------------------------------------- |
+| `SPM_TOKEN`     | Auth token (alternative to `--token` flag)            | `spm_eyJhbG...`                        |
 | `SPM_REGISTRY`  | Custom registry URL                                   | `https://registry.skillpkg.dev/api/v1` |
-| `SPM_CACHE_DIR` | Custom cache directory                                | `/tmp/spm-cache`                  |
-| `CI`            | Auto-detected; enables non-interactive mode           | `true` (set by GitHub Actions)    |
-| `NO_COLOR`      | Disable colored output                                | `1`                               |
-| `SPM_LOG_LEVEL` | Verbosity: `silent`, `error`, `warn`, `info`, `debug` | `info`                            |
+| `SPM_CACHE_DIR` | Custom cache directory                                | `/tmp/spm-cache`                       |
+| `CI`            | Auto-detected; enables non-interactive mode           | `true` (set by GitHub Actions)         |
+| `NO_COLOR`      | Disable colored output                                | `1`                                    |
+| `SPM_LOG_LEVEL` | Verbosity: `silent`, `error`, `warn`, `info`, `debug` | `info`                                 |
 
 When `CI=true` (auto-set by GitHub Actions), SPM:
 
@@ -458,15 +458,15 @@ The publish action exports outputs for use in subsequent steps:
     echo "Checksum: ${{ steps.publish.outputs.checksum }}"
 ```
 
-| Output      | Description                    | Example                           |
-| ----------- | ------------------------------ | --------------------------------- |
-| `name`      | Skill name                     | `data-viz`                        |
-| `version`   | Published version              | `1.2.3`                           |
-| `status`    | `published`, `held`, `blocked` | `published`                       |
+| Output      | Description                    | Example                                |
+| ----------- | ------------------------------ | -------------------------------------- |
+| `name`      | Skill name                     | `data-viz`                             |
+| `version`   | Published version              | `1.2.3`                                |
+| `status`    | `published`, `held`, `blocked` | `published`                            |
 | `url`       | Registry URL                   | `https://skillpkg.dev/skills/data-viz` |
-| `checksum`  | SHA256 of .skl                 | `a1b2c3d4...`                     |
-| `signer`    | Sigstore signer identity       | `github.com/almog/data-viz/...`   |
-| `rekor_url` | Rekor transparency log entry   | `https://rekor.sigstore.dev/...`  |
+| `checksum`  | SHA256 of .skl                 | `a1b2c3d4...`                          |
+| `signer`    | Sigstore signer identity       | `github.com/almog/data-viz/...`        |
+| `rekor_url` | Rekor transparency log entry   | `https://rekor.sigstore.dev/...`       |
 
 ---
 

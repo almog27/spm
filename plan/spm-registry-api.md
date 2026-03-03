@@ -1245,7 +1245,7 @@ app.route('/admin', admin);
 | Forged JWT with admin claim            | JWT signature verification fails (401)    |
 | Revoked admin with valid JWT           | DB role check fails (403)                 |
 | Dev forgets guard on new route         | Impossible — guard is on `admin.use('*')` |
-| Admin panel accessed from wrong origin | CORS restricts to `admin.skillpkg.dev`         |
+| Admin panel accessed from wrong origin | CORS restricts to `admin.skillpkg.dev`    |
 
 ### Validation
 

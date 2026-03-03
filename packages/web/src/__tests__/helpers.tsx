@@ -7,7 +7,10 @@ interface RenderWithProvidersOptions extends RenderOptions {
   routerProps?: MemoryRouterProps;
 }
 
-export const renderWithProviders = (ui: ReactNode, options?: RenderWithProvidersOptions): RenderResult => {
+export const renderWithProviders = (
+  ui: ReactNode,
+  options?: RenderWithProvidersOptions,
+): RenderResult => {
   const { routerProps, ...renderOptions } = options ?? {};
   return render(
     <MemoryRouter {...routerProps}>

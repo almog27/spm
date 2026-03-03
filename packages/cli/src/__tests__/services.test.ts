@@ -509,7 +509,8 @@ describe('resolver (edge cases)', () => {
             {
               name: 'found-skill',
               version: '1.0.0',
-              download_url: 'https://registry.skillpkg.dev/api/v1/skills/found-skill/1.0.0/download',
+              download_url:
+                'https://registry.skillpkg.dev/api/v1/skills/found-skill/1.0.0/download',
               checksum: 'sha256:abc',
               trust_tier: 'scanned',
               signed: false,

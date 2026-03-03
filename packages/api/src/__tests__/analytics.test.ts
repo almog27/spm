@@ -227,7 +227,12 @@ describe('cache service', () => {
       const fetcher = vi.fn().mockResolvedValue(new Response('fresh data', { status: 200 }));
       const mockContext = {} as never;
 
-      const response = await cachedResponse(mockContext, 'https://skillpkg.dev/cache/test', 60, fetcher);
+      const response = await cachedResponse(
+        mockContext,
+        'https://skillpkg.dev/cache/test',
+        60,
+        fetcher,
+      );
 
       expect(fetcher).toHaveBeenCalledOnce();
       expect(await response.text()).toBe('fresh data');
