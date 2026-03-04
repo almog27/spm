@@ -1,7 +1,57 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Search } from '../pages/Search';
-import { SKILLS_DB } from '../data/mock';
+import { searchSkills } from '../lib/api';
+
+vi.mock('../lib/api', () => ({
+  searchSkills: vi.fn(),
+}));
+
+const mockedSearchSkills = vi.mocked(searchSkills);
+
+const searchResults = [
+  {
+    name: 'pdf',
+    version: '2.0.3',
+    description: 'Read, create, merge, split, and fill PDF documents',
+    author: { username: 'anthropic', trust_tier: 'official' },
+    category: 'documents',
+    tags: ['documents', 'forms', 'ocr'],
+    downloads: 45100,
+    weekly_downloads: 3200,
+    rating_avg: 4.9,
+    rating_count: 342,
+    signed: true,
+    published_at: '2026-01-10T00:00:00Z',
+    updated_at: '2026-02-20T00:00:00Z',
+  },
+  {
+    name: 'data-viz',
+    version: '1.2.3',
+    description: 'Charts, dashboards, and visualizations',
+    author: { username: 'almog', trust_tier: 'verified' },
+    category: 'data-viz',
+    tags: ['charts', 'plotly'],
+    downloads: 12400,
+    weekly_downloads: 1200,
+    rating_avg: 4.8,
+    rating_count: 142,
+    signed: true,
+    published_at: '2025-11-01T00:00:00Z',
+    updated_at: '2026-02-15T00:00:00Z',
+  },
+];
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockedSearchSkills.mockResolvedValue({
+    results: searchResults,
+    total: searchResults.length,
+    page: 1,
+    per_page: 50,
+    pages: 1,
+  });
+});
 
 const renderSearch = (initialEntries: string[] = ['/search']) =>
   render(
@@ -11,18 +61,21 @@ const renderSearch = (initialEntries: string[] = ['/search']) =>
   );
 
 describe('Search', () => {
-  it('renders results count matching SKILLS_DB length', () => {
+  it('renders results count from API', async () => {
     renderSearch();
 
-    expect(screen.getByText(`${SKILLS_DB.length} results`)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(`${searchResults.length} results`)).toBeInTheDocument();
+    });
   });
 
-  it('renders skill names from mock data', () => {
+  it('renders skill names from API data', async () => {
     renderSearch();
 
-    for (const skill of SKILLS_DB) {
-      expect(screen.getByText(skill.name)).toBeInTheDocument();
-    }
+    await waitFor(() => {
+      expect(screen.getByText('pdf')).toBeInTheDocument();
+      expect(screen.getByText('data-viz')).toBeInTheDocument();
+    });
   });
 
   it('shows Category filter section', () => {

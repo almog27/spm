@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import {
-  SKILLS_DB,
-  CATEGORY_NAMES,
-  CATEGORY_SLUGS,
-  TRUST_TIERS,
-  SORT_OPTIONS,
-  type SkillFull,
-} from '../data/mock';
+import { CATEGORY_NAMES, CATEGORY_SLUGS, TRUST_TIERS, SORT_OPTIONS } from '../data/constants';
 import { TrustBadge, type TrustTier } from '@spm/ui';
 import { searchSkills, type SearchResultItem } from '../lib/api';
 
@@ -30,17 +23,6 @@ const apiResultToDisplay = (s: SearchResultItem): DisplaySkill => ({
   trust: s.author.trust_tier as TrustTier,
   downloads: s.downloads >= 1000 ? `${(s.downloads / 1000).toFixed(1)}k` : String(s.downloads),
   rating: s.rating_avg != null ? String(s.rating_avg) : '--',
-  tags: s.tags,
-});
-
-const mockToDisplay = (s: SkillFull): DisplaySkill => ({
-  name: s.name,
-  version: s.version,
-  desc: s.desc,
-  author: s.author,
-  trust: s.trust,
-  downloads: s.downloads,
-  rating: s.rating ?? '--',
   tags: s.tags,
 });
 
@@ -168,12 +150,10 @@ export const Search = () => {
   const [sort, setSort] = useState('relevance');
   const [apiResults, setApiResults] = useState<DisplaySkill[] | null>(null);
   const [totalResults, setTotalResults] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
 
   // Fetch from API when filters change
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
     const params: Record<string, string | number> = {};
     if (queryParam.trim()) params.q = queryParam.trim();
@@ -190,12 +170,8 @@ export const Search = () => {
       })
       .catch(() => {
         if (cancelled) return;
-        // Fallback to mock data
-        setApiResults(null);
-        setTotalResults(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        setApiResults([]);
+        setTotalResults(0);
       });
 
     return () => {
@@ -203,27 +179,7 @@ export const Search = () => {
     };
   }, [queryParam, category, trustFilter, sort]);
 
-  // Use API results if available, otherwise fall back to mock filtering
-  const filtered: DisplaySkill[] =
-    apiResults !== null
-      ? apiResults
-      : (() => {
-          const searchResults = queryParam.trim()
-            ? SKILLS_DB.filter(
-                (s) =>
-                  s.name.includes(queryParam.toLowerCase()) ||
-                  s.desc.toLowerCase().includes(queryParam.toLowerCase()) ||
-                  s.author.includes(queryParam.toLowerCase()) ||
-                  s.tags?.some((t) => t.includes(queryParam.toLowerCase())),
-              )
-            : SKILLS_DB;
-
-          return searchResults
-            .filter((s) => category === 'All' || s.category === CATEGORY_SLUGS[category])
-            .filter((s) => trustFilter === 'All' || s.trust === trustFilter.toLowerCase())
-            .map(mockToDisplay);
-        })();
-
+  const filtered: DisplaySkill[] = apiResults ?? [];
   const displayTotal = totalResults ?? filtered.length;
 
   return (

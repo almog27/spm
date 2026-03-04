@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { type SkillSummary } from '../data/mock';
+import { type SkillSummary } from '../data/constants';
 import { TrustBadge } from '@spm/ui';
 
 export const SkillRow = ({

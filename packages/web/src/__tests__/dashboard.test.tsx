@@ -2,10 +2,28 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Dashboard } from '../pages/Dashboard';
 import { useAuth } from '../context/AuthContext';
-import { MY_SKILLS } from '../pages/dashboard/mock-data';
 
 vi.mock('../context/AuthContext', () => ({
   useAuth: vi.fn(),
+}));
+
+vi.mock('../lib/api', () => ({
+  getAuthorStats: vi.fn().mockResolvedValue({
+    total_downloads: 0,
+    weekly_downloads: 0,
+    rating_avg: 0,
+    total_reviews: 0,
+    weekly_trend: [],
+    agent_breakdown: [],
+    recent_activity: [],
+  }),
+  searchSkills: vi.fn().mockResolvedValue({
+    results: [],
+    total: 0,
+    page: 1,
+    per_page: 50,
+    pages: 0,
+  }),
 }));
 
 const mockedUseAuth = vi.mocked(useAuth);
@@ -73,7 +91,7 @@ describe('Dashboard', () => {
     renderDashboard();
 
     expect(screen.getByText('Overview')).toBeInTheDocument();
-    expect(screen.getByText(`Skills (${MY_SKILLS.length})`)).toBeInTheDocument();
+    expect(screen.getByText('Skills (0)')).toBeInTheDocument();
     expect(screen.getByText('Publish history')).toBeInTheDocument();
     expect(screen.getByText('Analytics')).toBeInTheDocument();
   });
@@ -82,7 +100,6 @@ describe('Dashboard', () => {
     mockedUseAuth.mockReturnValue(authState());
     renderDashboard();
 
-    // The Overview tab button should be present and its content visible
     expect(screen.getByText('Your skills')).toBeInTheDocument();
   });
 

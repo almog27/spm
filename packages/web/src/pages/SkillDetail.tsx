@@ -1,6 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { SKILLS_DB, type SkillFull } from '../data/mock';
+import { type TrustTier } from '@spm/ui';
+
+interface SkillVersion {
+  v: string;
+  date: string;
+  changes: string;
+}
+
+interface SkillFull {
+  name: string;
+  version: string;
+  desc: string;
+  longDesc: string;
+  author: string;
+  trust: TrustTier;
+  downloads: string;
+  weeklyDownloads: string;
+  rating: string;
+  reviews: number;
+  license: string;
+  published: string;
+  updated: string;
+  size: string;
+  platforms: string[];
+  category: string;
+  tags?: string[];
+  versions: SkillVersion[];
+  dependencies: {
+    skills: string[];
+    system: string[];
+    pip: string[];
+  };
+  security: {
+    signed: boolean;
+    signer?: string;
+    scanned: string;
+    layers: string[];
+  };
+  repo: string;
+}
 import { CopyButton, TrustBadge, TRUST_CONFIG } from '@spm/ui';
 import { getSkill, type SkillDetailResponse } from '../lib/api';
 
@@ -62,10 +101,12 @@ export const SkillDetail = () => {
   const { name } = useParams<{ name: string }>();
   const [activeTab, setActiveTab] = useState<'readme' | 'versions' | 'security'>('readme');
   const [apiSkill, setApiSkill] = useState<SkillFull | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!name) return;
     let cancelled = false;
+    setLoading(true);
 
     getSkill(name)
       .then((data) => {
@@ -73,7 +114,10 @@ export const SkillDetail = () => {
         setApiSkill(apiToSkillFull(data));
       })
       .catch(() => {
-        // Fallback: keep apiSkill null, will use mock data
+        // On error: leave apiSkill null, show "Skill not found"
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
 
     return () => {
@@ -81,9 +125,23 @@ export const SkillDetail = () => {
     };
   }, [name]);
 
-  // Resolve skill: prefer API data, then mock fallback
-  const mockSkill = SKILLS_DB.find((s) => s.name === name) ?? null;
-  const skill = apiSkill ?? mockSkill;
+  const skill = apiSkill;
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: 1060, margin: '0 auto', padding: '64px 32px', textAlign: 'center' }}>
+        <div
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 15,
+            color: 'var(--color-text-muted)',
+          }}
+        >
+          Loading skill...
+        </div>
+      </div>
+    );
+  }
 
   if (!skill) {
     return (

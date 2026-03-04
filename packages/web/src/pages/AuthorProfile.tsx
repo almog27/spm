@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { SKILLS_DB } from '../data/mock';
 import { TrustBadge, type TrustTier } from '@spm/ui';
 import { getAuthorProfile, type AuthorProfileResponse } from '../lib/api';
 
@@ -28,7 +27,7 @@ export const AuthorProfile = () => {
         if (!cancelled) setAuthorData(data);
       })
       .catch(() => {
-        // Fallback to mock data
+        // On error: leave authorData null
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -39,7 +38,7 @@ export const AuthorProfile = () => {
     };
   }, [username]);
 
-  // Build display data from API or mock
+  // Build display data from API
   const authorSkills: AuthorDisplaySkill[] = authorData
     ? authorData.skills.map((s) => ({
         name: s.name,
@@ -49,23 +48,11 @@ export const AuthorProfile = () => {
         downloads: s.downloads >= 1000 ? s.downloads.toLocaleString() : String(s.downloads),
         rating: s.rating_avg != null ? String(s.rating_avg) : '--',
       }))
-    : SKILLS_DB.filter((s) => s.author === username).map((s) => ({
-        name: s.name,
-        version: s.version,
-        desc: s.desc,
-        trust: s.trust,
-        downloads: s.downloads,
-        rating: s.rating ?? '--',
-      }));
+    : [];
 
   const primaryTrust: TrustTier =
     (authorData?.trust_tier as TrustTier) ?? (authorSkills[0]?.trust || 'registered');
-  const totalDownloads = authorData
-    ? authorData.total_downloads
-    : authorSkills.reduce((sum, s) => {
-        const num = parseInt(s.downloads.replace(/,/g, ''), 10);
-        return sum + (isNaN(num) ? 0 : num);
-      }, 0);
+  const totalDownloads = authorData?.total_downloads ?? 0;
 
   if (loading) {
     return (

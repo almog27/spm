@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TRUST_CONFIG } from '@spm/ui';
-import { type Skill } from './mock-data';
+import { type Skill } from './types';
 
 interface SkillRowProps {
   skill: Skill;

@@ -1,4 +1,4 @@
-import type { PublishEvent } from './mock-data';
+import type { PublishEvent } from './types';
 
 const STATUS_CONFIG = {
   success: {

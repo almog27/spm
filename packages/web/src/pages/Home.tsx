@@ -1,16 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  FEATURED,
-  RISING,
-  MOST_INSTALLED,
-  NEW_THIS_WEEK,
-  CATEGORIES,
-  SEARCH_SUGGESTIONS,
-  ALL_SKILLS,
-  type SkillSummary,
-  type Category,
-} from '../data/mock';
+import { CATEGORIES, type SkillSummary, type Category } from '../data/constants';
 import { SkillCard } from '../components/SkillCard';
 import { SkillRow } from '../components/SkillRow';
 import { TrustBadge } from '@spm/ui';
@@ -56,27 +46,22 @@ export const Home = () => {
   const navigate = useNavigate();
 
   // API state for trending tabs
-  const [featuredSkills, setFeaturedSkills] = useState<SkillSummary[]>(FEATURED);
-  const [risingSkills, setRisingSkills] = useState<SkillSummary[]>(RISING);
-  const [mostInstalledSkills, setMostInstalledSkills] = useState<SkillSummary[]>(MOST_INSTALLED);
-  const [newSkills, setNewSkills] = useState<SkillSummary[]>(NEW_THIS_WEEK);
+  const [featuredSkills, setFeaturedSkills] = useState<SkillSummary[]>([]);
+  const [risingSkills, setRisingSkills] = useState<SkillSummary[]>([]);
+  const [mostInstalledSkills, setMostInstalledSkills] = useState<SkillSummary[]>([]);
+  const [newSkills, setNewSkills] = useState<SkillSummary[]>([]);
   const [categories, setCategories] = useState<Category[]>(CATEGORIES);
-  const [loadingTrending, setLoadingTrending] = useState(false);
 
   // Fetch trending data on mount and tab change
   useEffect(() => {
     let cancelled = false;
     const apiTab = trendingTab === 'most-installed' ? 'most_installed' : trendingTab;
-    setLoadingTrending(true);
 
     getTrending(apiTab)
       .then((data) => {
         if (cancelled) return;
         const mapped = data.skills.map(trendingToSummary);
-        if (mapped.length === 0) {
-          setLoadingTrending(false);
-          return;
-        }
+        if (mapped.length === 0) return;
         switch (trendingTab) {
           case 'featured':
             setFeaturedSkills(mapped);
@@ -93,10 +78,7 @@ export const Home = () => {
         }
       })
       .catch(() => {
-        // Fallback: keep mock data (already initialized)
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingTrending(false);
+        // On error: leave empty arrays
       });
 
     return () => {
@@ -113,7 +95,7 @@ export const Home = () => {
         }
       })
       .catch(() => {
-        // Fallback: keep mock categories
+        // Fallback: keep static categories
       });
   }, []);
 
@@ -126,8 +108,6 @@ export const Home = () => {
           s.author.includes(query.toLowerCase()),
       )
     : null;
-
-  const showSuggestions = focused && !query.trim();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -269,63 +249,6 @@ export const Home = () => {
               )}
             </div>
           </form>
-
-          {showSuggestions && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 4px)',
-                width: '100%',
-                background: 'var(--color-bg-card)',
-                border: '1px solid #1e293b',
-                borderRadius: 10,
-                overflow: 'hidden',
-                boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
-                zIndex: 50,
-              }}
-            >
-              <div
-                style={{
-                  padding: '8px 14px',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: 11,
-                  color: 'var(--color-text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                Popular searches
-              </div>
-              {SEARCH_SUGGESTIONS.map((s, i) => (
-                <div
-                  key={i}
-                  onMouseDown={() => {
-                    setQuery(s.query);
-                    navigate(`/search?q=${encodeURIComponent(s.query)}`);
-                  }}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: '#c8d0dc' }}>
-                    {s.query}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 11,
-                      color: 'var(--color-text-muted)',
-                    }}
-                  >
-                    {s.results}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 

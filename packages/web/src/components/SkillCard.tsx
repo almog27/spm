@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { type SkillSummary } from '../data/mock';
+import { type SkillSummary } from '../data/constants';
 import { TrustBadge } from '@spm/ui';
 
 const ACCENT_COLORS = ['#10b981', '#3b82f6', '#a78bfa'];

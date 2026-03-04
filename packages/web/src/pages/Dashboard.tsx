@@ -1,18 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  AUTHOR,
-  MY_SKILLS,
-  WEEKLY_TREND,
-  RECENT_ACTIVITY,
-  PUBLISH_HISTORY,
-  AGENT_BREAKDOWN,
   type Author,
   type Skill,
   type WeeklyData,
   type ActivityEvent,
   type AgentStat,
-} from './dashboard/mock-data';
+} from './dashboard/types';
 import {
   ActivityItem,
   BarSegment,
@@ -23,9 +17,8 @@ import {
   type TrustTier,
 } from '@spm/ui';
 import { SkillRow } from './dashboard/SkillRow';
-import { PublishRow } from './dashboard/PublishRow';
 import { TrustProgress } from './dashboard/TrustProgress';
-import { getAuthorStats, searchSkills, type AuthorStatsResponse } from '../lib/api';
+import { getAuthorStats, searchSkills } from '../lib/api';
 
 const cardStyle: React.CSSProperties = {
   background: 'var(--color-bg-card)',
@@ -64,28 +57,6 @@ const SkillsTableHeader = () => (
   </div>
 );
 
-const PublishTableHeader = () => (
-  <div
-    style={{
-      display: 'grid',
-      gridTemplateColumns: '140px 60px 1fr 100px 70px',
-      padding: '8px 16px',
-      gap: 12,
-      borderBottom: '1px solid var(--color-border-default)',
-      fontFamily: 'var(--font-sans)',
-      fontSize: 11,
-      color: 'var(--color-text-muted)',
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em',
-    }}
-  >
-    <span>Skill</span>
-    <span>Status</span>
-    <span>Detail</span>
-    <span style={{ textAlign: 'right' }}>Date</span>
-    <span style={{ textAlign: 'right' }}>Scan</span>
-  </div>
-);
 
 interface OverviewTabProps {
   onViewAllSkills: () => void;
@@ -275,51 +246,23 @@ const SkillsTab = ({ skills: skillsList }: { skills: Skill[] }) => (
   </div>
 );
 
-const PublishHistoryTab = () => {
-  const successCount = PUBLISH_HISTORY.filter((p) => p.status === 'success').length;
-  const blockedCount = PUBLISH_HISTORY.filter((p) => p.status === 'blocked').length;
-  const heldCount = PUBLISH_HISTORY.filter((p) => p.status === 'held').length;
-
-  return (
-    <div>
-      <div style={cardStyle}>
-        <PublishTableHeader />
-        {PUBLISH_HISTORY.map((item, i) => (
-          <PublishRow key={i} item={item} />
-        ))}
-      </div>
-      <div style={{ ...cardStyle, marginTop: 16, padding: '14px 18px' }}>
+const PublishHistoryTab = () => (
+  <div>
+    <div style={cardStyle}>
+      <div style={{ padding: 32, textAlign: 'center' }}>
         <div
           style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: 13,
-            color: 'var(--color-text-secondary)',
+            fontSize: 14,
+            color: 'var(--color-text-dim)',
           }}
         >
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}>
-            {successCount}
-          </span>{' '}
-          successful
-          {' \u00b7 '}
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-red)' }}>
-            {blockedCount}
-          </span>{' '}
-          blocked
-          {' \u00b7 '}
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-yellow)' }}>
-            {heldCount}
-          </span>{' '}
-          held for review
-          {' \u00b7 '}
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-dim)' }}>
-            {PUBLISH_HISTORY.length}
-          </span>{' '}
-          total attempts
+          No publish history yet
         </div>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 interface AnalyticsTabProps {
   trend: WeeklyData[];
@@ -496,16 +439,26 @@ const AGENT_COLORS: Record<string, string> = {
 export const Dashboard = () => {
   const [tab, setTab] = useState('overview');
   const { user, token } = useAuth();
-  const username = user?.username ?? AUTHOR.username;
-  const trustTier = (user?.trust_tier as TrustTier) ?? AUTHOR.trust;
-  const trustCfg = TRUST_CONFIG[trustTier] ?? TRUST_CONFIG[AUTHOR.trust];
+  const username = user?.username ?? 'unknown';
+  const trustTier = (user?.trust_tier as TrustTier) ?? 'registered';
+  const trustCfg = TRUST_CONFIG[trustTier] ?? TRUST_CONFIG['registered'];
 
-  // API-driven state with mock fallback
-  const [authorStats, setAuthorStats] = useState<Author>(AUTHOR);
-  const [skills, setSkills] = useState<Skill[]>(MY_SKILLS);
-  const [weeklyTrend, setWeeklyTrend] = useState<WeeklyData[]>(WEEKLY_TREND);
-  const [recentActivity, setRecentActivity] = useState<ActivityEvent[]>(RECENT_ACTIVITY);
-  const [agentBreakdown, setAgentBreakdown] = useState<AgentStat[]>(AGENT_BREAKDOWN);
+  // API-driven state
+  const [authorStats, setAuthorStats] = useState<Author>({
+    username,
+    github: username,
+    email: '',
+    trust: trustTier,
+    joined: '',
+    totalDownloads: 0,
+    weeklyDownloads: 0,
+    avgRating: 0,
+    totalReviews: 0,
+  });
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [weeklyTrend, setWeeklyTrend] = useState<WeeklyData[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityEvent[]>([]);
+  const [agentBreakdown, setAgentBreakdown] = useState<AgentStat[]>([]);
 
   useEffect(() => {
     if (!username || !token) return;
@@ -515,14 +468,14 @@ export const Dashboard = () => {
     getAuthorStats(username, token)
       .then((data) => {
         if (cancelled) return;
-        setAuthorStats({
-          ...AUTHOR,
+        setAuthorStats((prev) => ({
+          ...prev,
           username,
           totalDownloads: data.total_downloads,
           weeklyDownloads: data.weekly_downloads,
           avgRating: data.rating_avg,
           totalReviews: data.total_reviews,
-        });
+        }));
         if (data.weekly_trend.length > 0) {
           setWeeklyTrend(
             data.weekly_trend.map((w) => ({
@@ -553,7 +506,7 @@ export const Dashboard = () => {
         }
       })
       .catch(() => {
-        // Fallback: keep mock data
+        // On error: leave empty state
       });
 
     // Fetch user's skills
@@ -577,12 +530,10 @@ export const Dashboard = () => {
             updated: s.updated_at?.split('T')[0] ?? '',
             status: 'published',
           }));
-        if (mySkills.length > 0) {
-          setSkills(mySkills);
-        }
+        setSkills(mySkills);
       })
       .catch(() => {
-        // Fallback: keep mock data
+        // On error: leave empty state
       });
 
     return () => {
