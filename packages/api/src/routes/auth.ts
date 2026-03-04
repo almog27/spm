@@ -121,40 +121,51 @@ authRoutes.post('/auth/token', async (c) => {
   const ghUser = (await ghUserRes.json()) as GitHubUser;
   const db = c.get('db' as never) as AppEnv['Variables']['db'];
 
-  // Upsert user — insert if new, update github info if existing
-  const [user] = await db
-    .insert(users)
-    .values({
-      username: ghUser.login,
-      githubId: String(ghUser.id),
-      githubLogin: ghUser.login,
-      email: ghUser.email,
-    })
-    .onConflictDoUpdate({
-      target: users.githubId,
-      set: {
+  try {
+    // Upsert user — insert if new, update github info if existing
+    const [user] = await db
+      .insert(users)
+      .values({
+        username: ghUser.login,
+        githubId: String(ghUser.id),
         githubLogin: ghUser.login,
         email: ghUser.email,
-        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: users.githubId,
+        set: {
+          githubLogin: ghUser.login,
+          email: ghUser.email,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+
+    const token = await signJwt(
+      { sub: user.id, username: user.username, role: user.role },
+      c.env.JWT_SECRET,
+    );
+
+    return c.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        github_login: user.githubLogin,
+        trust_tier: user.trustTier,
+        is_admin: user.role === 'admin',
+        created_at: user.createdAt.toISOString(),
       },
-    })
-    .returning();
-
-  const token = await signJwt(
-    { sub: user.id, username: user.username, role: user.role },
-    c.env.JWT_SECRET,
-  );
-
-  return c.json({
-    token,
-    user: {
-      id: user.id,
-      username: user.username,
-      github_login: user.githubLogin,
-      trust_tier: user.trustTier,
-      created_at: user.createdAt.toISOString(),
-    },
-  });
+    });
+  } catch (err) {
+    console.error('[auth/token] User upsert or JWT failed:', err);
+    return c.json(
+      createApiError('INTERNAL_ERROR', {
+        message: `Auth failed: ${err instanceof Error ? err.message : 'unknown'}`,
+      }),
+      ERROR_CODES.INTERNAL_ERROR.status,
+    );
+  }
 });
 
 // GET /auth/whoami — return current user profile
