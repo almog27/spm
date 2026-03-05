@@ -45,7 +45,12 @@ export const Footer = () => {
           Skills Package Manager
         </span>
       </div>
-      <div style={{ display: 'flex', gap: 18 }}>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+        <code
+          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-faint)' }}
+        >
+          npm i -g spm
+        </code>
         <Link
           to="/docs"
           style={{

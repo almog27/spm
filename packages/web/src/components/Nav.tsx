@@ -142,11 +142,6 @@ export const Nav = ({
             {item.label}
           </Link>
         ))}
-        <code
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-faint)' }}
-        >
-          npm i -g spm
-        </code>
         {!isLoading && isAuthenticated && user ? (
           <>
             <Link
