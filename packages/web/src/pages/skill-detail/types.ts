@@ -74,11 +74,11 @@ export const apiToSkillFull = (data: SkillDetailResponse): SkillFull => ({
     pip: data.dependencies?.packages ?? [],
   },
   security: {
-    signed: data.security.signed,
-    signer: data.security.signer_identity,
-    scanned: data.security.scan_status,
+    signed: data.security?.signed ?? false,
+    signer: data.security?.signer_identity,
+    scanned: data.security?.scan_status ?? 'unknown',
     layers:
-      data.security.scan_layers?.map(
+      data.security?.scan_layers?.map(
         (l) =>
           `Layer ${l.layer}: ${l.status}${l.confidence != null ? ` (${l.confidence})` : ''}${l.detail ? ` - ${l.detail}` : ''}`,
       ) ?? [],

@@ -115,7 +115,7 @@ export interface SkillDetailResponse {
     signer_identity?: string;
     scan_status: string;
     scan_layers?: Array<{ layer: number; status: string; detail?: string; confidence?: number }>;
-  };
+  } | null;
   versions: SkillVersionInfo[];
   dependencies?: {
     skills?: string[];
