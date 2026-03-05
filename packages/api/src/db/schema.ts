@@ -72,7 +72,7 @@ export const skills = pgTable(
     ownerId: uuid('owner_id')
       .notNull()
       .references(() => users.id),
-    category: skillCategoryEnum('category').notNull(),
+    categories: text('categories').array().notNull().$type<string[]>(),
     description: text('description').notNull(),
     repository: text('repository'),
     license: text('license').default('MIT'),
@@ -85,7 +85,7 @@ export const skills = pgTable(
   },
   (table) => [
     index('idx_skills_name').on(table.name),
-    index('idx_skills_category').on(table.category),
+    index('idx_skills_categories').on(table.categories),
     index('idx_skills_owner').on(table.ownerId),
   ],
 );

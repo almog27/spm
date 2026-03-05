@@ -96,7 +96,7 @@ describe('init command', () => {
     const manifest = JSON.parse(manifestRaw);
 
     expect(manifest.version).toBe('0.1.0');
-    expect(manifest.category).toBe('other');
+    expect(manifest.categories).toEqual(['other']);
     expect(manifest.license).toBe('MIT');
     expect(manifest.spm).toEqual({ manifest_version: 1 });
 
@@ -122,7 +122,7 @@ describe('init command', () => {
     mockPrompt.mockResolvedValue({
       name: 'my-cool-skill',
       description: 'A cool skill for testing',
-      category: 'testing',
+      categories: ['testing'],
       license: 'Apache-2.0',
     });
 
@@ -134,7 +134,7 @@ describe('init command', () => {
 
     expect(manifest.name).toBe('my-cool-skill');
     expect(manifest.description).toBe('A cool skill for testing');
-    expect(manifest.category).toBe('testing');
+    expect(manifest.categories).toEqual(['testing']);
     expect(manifest.license).toBe('Apache-2.0');
   });
 
@@ -330,7 +330,7 @@ describe('pack command', () => {
       name: 'test-skill',
       version: '1.0.0',
       description: 'A test skill for unit testing purposes and validation',
-      category: 'other',
+      categories: ['other'],
       license: 'MIT',
       ...overrides,
     };
@@ -549,7 +549,7 @@ describe('init command (edge cases)', () => {
     mockPrompt.mockResolvedValue({
       name: 'custom-skill',
       description: 'Custom description for a great skill',
-      category: 'data-viz',
+      categories: ['data-viz'],
       license: 'ISC',
     });
 
@@ -561,7 +561,7 @@ describe('init command (edge cases)', () => {
 
     expect(manifest.name).toBe('custom-skill');
     expect(manifest.description).toBe('Custom description for a great skill');
-    expect(manifest.category).toBe('data-viz');
+    expect(manifest.categories).toEqual(['data-viz']);
     expect(manifest.license).toBe('ISC');
   });
 
@@ -569,7 +569,7 @@ describe('init command (edge cases)', () => {
     mockPrompt.mockResolvedValue({
       name: 'code-review',
       description: 'A comprehensive code review assistant skill',
-      category: 'code-quality',
+      categories: ['code-quality'],
       license: 'MIT',
     });
 

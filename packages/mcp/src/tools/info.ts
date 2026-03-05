@@ -13,7 +13,7 @@ export const formatSkillInfo = (skill: {
   description: string;
   author: string;
   verified?: boolean;
-  category: string;
+  categories: string[];
   license?: string;
   downloads: number;
   downloads_this_week?: number;
@@ -24,8 +24,10 @@ export const formatSkillInfo = (skill: {
 }): string => {
   const header = `${skill.name} v${skill.version}`;
   const separator = '═'.repeat(Math.max(header.length, 23));
-  const categoryInfo = CATEGORY_INFO[skill.category as SkillCategory];
-  const categoryDisplay = categoryInfo ? categoryInfo.display : skill.category;
+  const categoryDisplays = skill.categories.map((cat) => {
+    const info = CATEGORY_INFO[cat as SkillCategory];
+    return info ? info.display : cat;
+  });
   const verifiedMark = skill.verified ? ' (verified ✓)' : '';
 
   const lines: string[] = [
@@ -34,7 +36,7 @@ export const formatSkillInfo = (skill: {
     skill.description,
     '',
     `Author: ${skill.author}${verifiedMark}`,
-    `Category: ${categoryDisplay}`,
+    `Categories: ${categoryDisplays.join(', ')}`,
   ];
 
   if (skill.license) {

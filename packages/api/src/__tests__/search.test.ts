@@ -95,19 +95,13 @@ describe('categories routes — GET /categories', () => {
   it('should return all 10 categories with counts', async () => {
     const { categoriesRoutes: categoriesRoutes } = await import('../routes/categories.js');
 
-    // Mock DB that returns counts for 2 categories
-    const mockSelect = vi.fn();
-    const mockFrom = vi.fn();
-    const mockGroupBy = vi.fn();
-
-    mockSelect.mockReturnValueOnce({ from: mockFrom });
-    mockFrom.mockReturnValueOnce({ groupBy: mockGroupBy });
-    mockGroupBy.mockResolvedValueOnce([
-      { category: 'frontend', count: 5 },
-      { category: 'backend', count: 3 },
+    // Mock DB that returns counts for 2 categories (now uses db.execute with unnest)
+    const mockExecute = vi.fn().mockResolvedValueOnce([
+      { cat: 'frontend', count: 5 },
+      { cat: 'backend', count: 3 },
     ]);
 
-    const db = { select: mockSelect };
+    const db = { execute: mockExecute };
 
     const app = new Hono<AppEnv>();
     app.use('*', async (c, next) => {
@@ -220,7 +214,7 @@ describe('categories routes — POST /categories/classify', () => {
       }
 
       return c.json({
-        suggested_category: score > 0 ? 'frontend' : body.manifest_category,
+        suggested_categories: score > 0 ? ['frontend'] : [body.manifest_category],
         confidence: 0.5,
         matches_manifest: true,
         alternatives: ['data-viz'],
@@ -241,13 +235,13 @@ describe('categories routes — POST /categories/classify', () => {
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      suggested_category: string;
+      suggested_categories: string[];
       confidence: number;
       matches_manifest: boolean;
       alternatives: string[];
     };
 
-    expect(body.suggested_category).toBe('frontend');
+    expect(body.suggested_categories).toEqual(['frontend']);
     expect(body.matches_manifest).toBe(true);
     expect(typeof body.confidence).toBe('number');
     expect(Array.isArray(body.alternatives)).toBe(true);
@@ -434,15 +428,10 @@ describe('categories routes — edge cases', () => {
   it('should handle DB returning empty category counts', async () => {
     const { categoriesRoutes } = await import('../routes/categories.js');
 
-    const mockSelect = vi.fn();
-    const mockFrom = vi.fn();
-    const mockGroupBy = vi.fn();
+    // Mock DB that returns empty result (now uses db.execute with unnest)
+    const mockExecute = vi.fn().mockResolvedValueOnce([]);
 
-    mockSelect.mockReturnValueOnce({ from: mockFrom });
-    mockFrom.mockReturnValueOnce({ groupBy: mockGroupBy });
-    mockGroupBy.mockResolvedValueOnce([]); // No categories have any skills
-
-    const db = { select: mockSelect };
+    const db = { execute: mockExecute };
 
     const app = new Hono<AppEnv>();
     app.use('*', async (c, next) => {

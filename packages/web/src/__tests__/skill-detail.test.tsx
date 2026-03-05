@@ -13,7 +13,7 @@ const mockPdfSkill = {
   name: 'pdf',
   description: 'Read, create, merge, split, and fill PDF documents',
   author: { username: 'anthropic', github_login: 'anthropic', trust_tier: 'official' },
-  category: 'documents',
+  categories: ['documents'],
   tags: ['documents', 'forms', 'ocr'],
   platforms: ['all'],
   license: 'MIT',

@@ -149,7 +149,7 @@ describe('smoke tests', () => {
       // Verify files exist
       const manifest = JSON.parse(await fs.readFile(path.join(tmpDir, 'manifest.json'), 'utf-8'));
       expect(manifest.version).toBe('0.1.0');
-      expect(manifest.category).toBe('other');
+      expect(manifest.categories).toEqual(['other']);
 
       const skillMd = await fs.readFile(path.join(tmpDir, 'SKILL.md'), 'utf-8');
       expect(skillMd.length).toBeGreaterThan(0);

@@ -90,7 +90,7 @@ export const ManifestSchema = z.object({
 
   // Discovery
   keywords: z.array(z.string().max(50)).max(20).optional(),
-  category: z.enum(CATEGORIES).default('other'),
+  categories: z.array(z.enum(CATEGORIES)).min(1).max(3).default(['other']),
 
   // Legal
   license: z.string().optional(),

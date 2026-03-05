@@ -62,13 +62,13 @@ export const registerInitCommand = (program: Command): void => {
       try {
         let name: string;
         let description: string;
-        let category: SkillCategory;
+        let categories: SkillCategory[];
         let license: string;
 
         if (opts.yes) {
           name = getDirName();
           description = '';
-          category = 'other';
+          categories = ['other'];
           license = 'MIT';
         } else {
           const categoryChoices = CATEGORIES.map((cat) => ({
@@ -91,11 +91,16 @@ export const registerInitCommand = (program: Command): void => {
               default: '',
             },
             {
-              type: 'list',
-              name: 'category',
-              message: 'Category:',
+              type: 'checkbox',
+              name: 'categories',
+              message: 'Categories (1-3):',
               choices: categoryChoices,
-              default: 'other',
+              default: ['other'],
+              validate: (input: string[]) => {
+                if (input.length === 0) return 'Select at least 1 category';
+                if (input.length > 3) return 'Maximum 3 categories allowed';
+                return true;
+              },
             },
             {
               type: 'input',
@@ -107,7 +112,8 @@ export const registerInitCommand = (program: Command): void => {
 
           name = answers.name as string;
           description = answers.description as string;
-          category = answers.category as SkillCategory;
+          categories = answers.categories as SkillCategory[];
+          if (categories.length === 0) categories = ['other'];
           license = answers.license as string;
         }
 
@@ -115,7 +121,7 @@ export const registerInitCommand = (program: Command): void => {
           name,
           version: '0.1.0',
           description: description || `A skill for ${name}`,
-          category,
+          categories,
           license,
           keywords: [],
           agents: {
@@ -164,7 +170,7 @@ export const registerInitCommand = (program: Command): void => {
           logJson({
             name,
             version: '0.1.0',
-            category,
+            categories,
             license,
             files: ['manifest.json', 'SKILL.md', 'scripts/', 'tests/eval.json'],
           });

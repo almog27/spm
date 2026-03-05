@@ -29,7 +29,7 @@ interface SkillDetail {
   rating: number;
   review_count: number;
   platforms: string[];
-  category: string;
+  categories: string[];
   repository?: string;
   published_at: string;
   versions: SkillVersion[];

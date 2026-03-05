@@ -72,7 +72,7 @@ export const rejectQueueItem = (
 export interface AdminSkillItem {
   name: string;
   description: string;
-  category: string;
+  categories: string[];
   deprecated: boolean;
   author: string;
   trust_tier: string;

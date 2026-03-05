@@ -4,7 +4,7 @@ export interface SkillSearchResult {
   name: string;
   version: string;
   description: string;
-  category: string;
+  categories: string[];
   downloads: number;
   downloads_this_week?: number;
   rating: number;
@@ -24,7 +24,7 @@ export interface SkillDetail {
   name: string;
   version: string;
   description: string;
-  category: string;
+  categories: string[];
   license?: string;
   downloads: number;
   downloads_this_week?: number;

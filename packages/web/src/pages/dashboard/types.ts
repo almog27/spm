@@ -17,7 +17,7 @@ export interface Author {
 export interface Skill {
   name: string;
   version: string;
-  category: string;
+  categories: string[];
   desc: string;
   downloads: number;
   weeklyDownloads: number;

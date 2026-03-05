@@ -34,7 +34,7 @@ export interface TrendingSkill {
   version: string | null;
   description: string;
   author: { username: string; trust_tier: string };
-  category: string;
+  categories: string[];
   downloads: number;
   weekly_downloads: number;
   weekly_growth_pct?: number;
@@ -56,7 +56,7 @@ export interface SearchResultItem {
   version: string;
   description: string;
   author: { username: string; trust_tier: string };
-  category: string;
+  categories: string[];
   tags?: string[];
   platforms?: string[];
   downloads: number;
@@ -99,7 +99,7 @@ export interface SkillDetailResponse {
   name: string;
   description: string;
   author: { username: string; github_login: string; trust_tier: string };
-  category: string;
+  categories: string[];
   tags?: string[];
   platforms?: string[];
   license?: string;
@@ -174,7 +174,7 @@ export interface AuthorSkill {
   version: string;
   downloads: number;
   rating_avg: number | null;
-  category: string;
+  categories: string[];
   description?: string;
 }
 

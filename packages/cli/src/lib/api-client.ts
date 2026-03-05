@@ -59,7 +59,7 @@ export interface SkillSearchResultItem {
   rating: number;
   review_count: number;
   platforms: string[];
-  category: string;
+  categories: string[];
   updated_at: string;
 }
 
@@ -92,7 +92,7 @@ export interface SkillDetail {
   rating: number;
   review_count: number;
   platforms: string[];
-  category: string;
+  categories: string[];
   repository?: string;
   published_at: string;
   versions: SkillVersionInfo[];
@@ -125,7 +125,7 @@ export interface PublishResponse {
 }
 
 export interface ClassifyResponse {
-  detected_category: string;
+  suggested_categories: string[];
   confidence: number;
 }
 

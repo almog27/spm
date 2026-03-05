@@ -18,7 +18,7 @@ interface SearchSkillResult {
   rating: number;
   review_count: number;
   platforms: string[];
-  category: string;
+  categories: string[];
   updated_at: string;
 }
 

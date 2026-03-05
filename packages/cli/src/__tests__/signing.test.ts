@@ -350,7 +350,7 @@ describe('publish command with signing', () => {
     name: 'my-skill',
     version: '1.0.0',
     description: 'A test skill for unit testing purposes here',
-    category: 'data-viz',
+    categories: ['data-viz'],
   });
 
   const buildProgram = async () => {
@@ -371,7 +371,7 @@ describe('publish command with signing', () => {
     });
 
     mockClassifySkill.mockResolvedValue({
-      detected_category: 'data-viz',
+      suggested_categories: ['data-viz'],
       confidence: 0.95,
     });
 
@@ -414,7 +414,7 @@ describe('publish command with signing', () => {
     });
 
     mockClassifySkill.mockResolvedValue({
-      detected_category: 'data-viz',
+      suggested_categories: ['data-viz'],
       confidence: 0.95,
     });
 
@@ -454,7 +454,7 @@ describe('publish command with signing', () => {
     });
 
     mockClassifySkill.mockResolvedValue({
-      detected_category: 'data-viz',
+      suggested_categories: ['data-viz'],
       confidence: 0.95,
     });
 

@@ -13,7 +13,7 @@ export const SEED_SKILLS: SeedSkill[] = [
       version: '1.0.0',
       description:
         'Perform thorough code reviews with actionable feedback on correctness, performance, security, and style. Use when the user asks to review code, check a PR, or audit a file.',
-      category: 'code-quality',
+      categories: ['code-quality'],
       keywords: ['code-review', 'pull-request', 'audit', 'best-practices', 'lint'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -21,7 +21,7 @@ export const SEED_SKILLS: SeedSkill[] = [
     skill_md: `---
 name: code-review
 version: 1.0.0
-category: code-quality
+categories: [code-quality]
 triggers:
   - review this code
   - check my PR
@@ -61,7 +61,7 @@ Always be constructive and explain the *why* behind each suggestion.
       version: '1.0.0',
       description:
         'Generate comprehensive test suites for any codebase. Covers unit tests, integration tests, edge cases, and mocks. Use when the user asks to write tests or improve coverage.',
-      category: 'testing',
+      categories: ['testing'],
       keywords: ['test', 'unit-test', 'integration', 'coverage', 'jest', 'vitest', 'pytest'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -69,7 +69,7 @@ Always be constructive and explain the *why* behind each suggestion.
     skill_md: `---
 name: test-gen
 version: 1.0.0
-category: testing
+categories: [testing]
 triggers:
   - write tests
   - generate tests
@@ -111,7 +111,7 @@ You are an expert test engineer. Generate comprehensive tests for the given code
       version: '1.0.0',
       description:
         'Create charts, dashboards, and data visualizations from CSV, JSON, or database output. Use when the user asks to plot, chart, graph, or visualize data in any format.',
-      category: 'data-viz',
+      categories: ['data-viz'],
       keywords: ['chart', 'visualization', 'dashboard', 'plotly', 'csv', 'graph', 'data'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -125,7 +125,7 @@ You are an expert test engineer. Generate comprehensive tests for the given code
     skill_md: `---
 name: data-viz
 version: 1.0.0
-category: data-viz
+categories: [data-viz]
 triggers:
   - visualize this data
   - create a chart
@@ -174,7 +174,7 @@ You are a data visualization expert. Create clear, informative charts and dashbo
       version: '1.0.0',
       description:
         'Design and scaffold RESTful and GraphQL APIs with proper routing, validation, error handling, and documentation. Use when the user asks to create an API, design endpoints, or build a backend service.',
-      category: 'backend',
+      categories: ['backend'],
       keywords: ['api', 'rest', 'graphql', 'endpoint', 'openapi', 'swagger', 'backend'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -182,7 +182,7 @@ You are a data visualization expert. Create clear, informative charts and dashbo
     skill_md: `---
 name: api-design
 version: 1.0.0
-category: backend
+categories: [backend]
 triggers:
   - design an API
   - create endpoints
@@ -233,7 +233,7 @@ Always version APIs (/v1/) and document breaking changes.
       version: '1.0.0',
       description:
         'Automate git workflows including branching strategies, commit message formatting, rebasing, merge conflict resolution, and release tagging. Use when the user asks for git help or workflow automation.',
-      category: 'productivity',
+      categories: ['productivity'],
       keywords: ['git', 'workflow', 'branching', 'commit', 'merge', 'rebase', 'release'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -248,7 +248,7 @@ Always version APIs (/v1/) and document breaking changes.
     skill_md: `---
 name: git-workflow
 version: 1.0.0
-category: productivity
+categories: [productivity]
 triggers:
   - git workflow
   - branching strategy
@@ -298,7 +298,7 @@ You are a git workflow expert. Help automate and optimize git-based development 
       version: '1.0.0',
       description:
         'Generate and maintain technical documentation including READMEs, API docs, architecture guides, and inline code comments. Use when the user asks to document code or write technical content.',
-      category: 'documents',
+      categories: ['documents'],
       keywords: ['documentation', 'readme', 'api-docs', 'jsdoc', 'docstring', 'technical-writing'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -306,7 +306,7 @@ You are a git workflow expert. Help automate and optimize git-based development 
     skill_md: `---
 name: docs-writer
 version: 1.0.0
-category: documents
+categories: [documents]
 triggers:
   - write documentation
   - create a README
@@ -363,7 +363,7 @@ You are a technical documentation expert. Create clear, comprehensive documentat
       version: '1.0.0',
       description:
         'Perform security audits on codebases to find vulnerabilities including injection attacks, auth flaws, dependency risks, and misconfigurations. Use when the user asks for a security review or vulnerability scan.',
-      category: 'security',
+      categories: ['security'],
       keywords: ['security', 'audit', 'vulnerability', 'owasp', 'injection', 'xss', 'auth'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -376,7 +376,7 @@ You are a technical documentation expert. Create clear, comprehensive documentat
     skill_md: `---
 name: security-audit
 version: 1.0.0
-category: security
+categories: [security]
 triggers:
   - security audit
   - find vulnerabilities
@@ -434,7 +434,7 @@ Include proof-of-concept and remediation steps for each finding.
       version: '1.0.0',
       description:
         'Analyze and optimize code performance by identifying bottlenecks, reducing complexity, improving algorithms, and suggesting caching strategies. Use when the user asks to speed up code or fix performance issues.',
-      category: 'code-quality',
+      categories: ['code-quality'],
       keywords: [
         'performance',
         'optimization',
@@ -450,7 +450,7 @@ Include proof-of-concept and remediation steps for each finding.
     skill_md: `---
 name: perf-optimize
 version: 1.0.0
-category: code-quality
+categories: [code-quality]
 triggers:
   - optimize performance
   - speed up this code
@@ -511,7 +511,7 @@ You are a performance optimization expert. Analyze code and suggest targeted imp
       version: '1.0.0',
       description:
         'Generate and manage database migrations for schema changes including table creation, column modifications, index management, and data migrations. Use when the user needs to change the database schema.',
-      category: 'backend',
+      categories: ['backend'],
       keywords: ['database', 'migration', 'schema', 'sql', 'postgres', 'mysql', 'prisma', 'knex'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -525,7 +525,7 @@ You are a performance optimization expert. Analyze code and suggest targeted imp
     skill_md: `---
 name: db-migration
 version: 1.0.0
-category: backend
+categories: [backend]
 triggers:
   - create a migration
   - change database schema
@@ -582,7 +582,7 @@ You are a database migration expert. Generate safe, reversible schema changes.
       version: '1.0.0',
       description:
         'Generate and validate deployment checklists for production releases including pre-deploy checks, rollback plans, monitoring setup, and post-deploy verification. Use when deploying to production or staging.',
-      category: 'infra',
+      categories: ['infra'],
       keywords: ['deploy', 'deployment', 'checklist', 'production', 'release', 'rollback', 'ci-cd'],
       license: 'MIT',
       authors: [{ name: 'SPM Team', email: 'team@skillpkg.dev' }],
@@ -602,7 +602,7 @@ You are a database migration expert. Generate safe, reversible schema changes.
     skill_md: `---
 name: deploy-checklist
 version: 1.0.0
-category: infra
+categories: [infra]
 triggers:
   - deploy to production
   - deployment checklist

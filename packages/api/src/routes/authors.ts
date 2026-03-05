@@ -24,7 +24,7 @@ authorsRoutes.get('/authors/:username', async (c) => {
     .select({
       id: skills.id,
       name: skills.name,
-      category: skills.category,
+      categories: skills.categories,
       ratingAvg: skills.ratingAvg,
     })
     .from(skills)
@@ -55,7 +55,7 @@ authorsRoutes.get('/authors/:username', async (c) => {
         version: latestVersion?.version ?? null,
         downloads: dlCount.total,
         rating_avg: row.ratingAvg,
-        category: row.category,
+        categories: row.categories,
       };
     }),
   );

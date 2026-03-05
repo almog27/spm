@@ -65,7 +65,7 @@ describe('formatSkillInfo', () => {
       description: 'Charts, dashboards, and visualizations from CSV, JSON, or database output',
       author: 'almog',
       verified: true,
-      category: 'data-viz',
+      categories: ['data-viz'],
       license: 'MIT',
       downloads: 12400,
       downloads_this_week: 1200,
@@ -79,7 +79,7 @@ describe('formatSkillInfo', () => {
     expect(result).toContain('═');
     expect(result).toContain('Charts, dashboards, and visualizations');
     expect(result).toContain('Author: almog (verified ✓)');
-    expect(result).toContain('Category: Data & Visualization');
+    expect(result).toContain('Categories: Data & Visualization');
     expect(result).toContain('License: MIT');
     expect(result).toContain('Downloads: 12,400 (1,200 this week)');
     expect(result).toContain('Rating: ⭐ 4.8 (142 reviews)');
@@ -94,7 +94,7 @@ describe('formatSkillInfo', () => {
       version: '0.1.0',
       description: 'A minimal skill for testing purposes',
       author: 'test-user',
-      category: 'other',
+      categories: ['other'],
       downloads: 5,
       rating: 0,
       review_count: 0,

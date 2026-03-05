@@ -97,7 +97,7 @@ describe('ManifestSchema', () => {
     expect(result.version).toBe('1.0.0');
     expect(result.description).toBe(minimalManifest.description);
     // Check defaults
-    expect(result.category).toBe('other');
+    expect(result.categories).toEqual(['other']);
     expect(result.private).toBe(false);
   });
 
@@ -107,7 +107,7 @@ describe('ManifestSchema', () => {
       authors: [{ name: 'Alice', email: 'alice@example.com' }],
       maintainers: [{ name: 'Bob', email: 'bob@example.com' }],
       keywords: ['testing', 'automation'],
-      category: 'testing' as const,
+      categories: ['testing'] as const,
       license: 'MIT',
       private: false,
       urls: {
@@ -151,7 +151,7 @@ describe('ManifestSchema', () => {
     expect(result.name).toBe('my-skill');
     expect(result.authors).toHaveLength(1);
     expect(result.authors![0].name).toBe('Alice');
-    expect(result.category).toBe('testing');
+    expect(result.categories).toEqual(['testing']);
     expect(result.urls?.homepage).toBe('https://example.com');
     expect(result.agents?.platforms).toEqual(['claude-code', 'cursor']);
     expect(result.dependencies?.pip).toEqual(['pandas>=2.0']);
@@ -183,13 +183,15 @@ describe('ManifestSchema', () => {
     expect(() => ManifestSchema.parse(noDesc)).toThrow();
   });
 
-  it('rejects manifest with invalid category', () => {
-    expect(() => ManifestSchema.parse({ ...minimalManifest, category: 'nonexistent' })).toThrow();
+  it('rejects manifest with invalid categories', () => {
+    expect(() =>
+      ManifestSchema.parse({ ...minimalManifest, categories: ['nonexistent'] }),
+    ).toThrow();
   });
 
-  it('applies default category when not provided', () => {
+  it('applies default categories when not provided', () => {
     const result = ManifestSchema.parse(minimalManifest);
-    expect(result.category).toBe('other');
+    expect(result.categories).toEqual(['other']);
   });
 
   it('accepts all valid categories', () => {
@@ -207,9 +209,30 @@ describe('ManifestSchema', () => {
     ] as const;
 
     for (const category of categories) {
-      const result = ManifestSchema.parse({ ...minimalManifest, category });
-      expect(result.category).toBe(category);
+      const result = ManifestSchema.parse({ ...minimalManifest, categories: [category] });
+      expect(result.categories).toEqual([category]);
     }
+  });
+
+  it('accepts multi-category manifests', () => {
+    const result = ManifestSchema.parse({
+      ...minimalManifest,
+      categories: ['code-quality', 'productivity'],
+    });
+    expect(result.categories).toEqual(['code-quality', 'productivity']);
+  });
+
+  it('rejects more than 3 categories', () => {
+    expect(() =>
+      ManifestSchema.parse({
+        ...minimalManifest,
+        categories: ['code-quality', 'productivity', 'testing', 'backend'],
+      }),
+    ).toThrow();
+  });
+
+  it('rejects empty categories array', () => {
+    expect(() => ManifestSchema.parse({ ...minimalManifest, categories: [] })).toThrow();
   });
 
   it('rejects too many keywords', () => {

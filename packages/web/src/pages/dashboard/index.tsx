@@ -103,7 +103,7 @@ export const Dashboard = () => {
           .map((s) => ({
             name: s.name,
             version: s.version,
-            category: s.category,
+            categories: s.categories,
             desc: s.description,
             downloads: s.downloads,
             weeklyDownloads: s.weekly_downloads,

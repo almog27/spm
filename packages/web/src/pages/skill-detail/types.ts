@@ -23,7 +23,7 @@ export interface SkillFull {
   updated: string;
   size: string;
   platforms: string[];
-  category: string;
+  categories: string[];
   tags?: string[];
   versions: SkillVersion[];
   dependencies: {
@@ -61,7 +61,7 @@ export const apiToSkillFull = (data: SkillDetailResponse): SkillFull => ({
   updated: data.updated_at?.split('T')[0] ?? '',
   size: '--',
   platforms: data.platforms ?? ['all'],
-  category: data.category,
+  categories: data.categories,
   tags: data.tags,
   versions: data.versions.map((v) => ({
     v: v.version,

@@ -92,7 +92,7 @@ skillsRoutes.post('/skills', authed, async (c) => {
   }
 
   const manifest: Manifest = manifestResult.data;
-  const { name, version, description, category } = manifest;
+  const { name, version, description, categories } = manifest;
 
   // Validate name format
   const nameCheck = validateSkillName(name);
@@ -197,7 +197,7 @@ skillsRoutes.post('/skills', authed, async (c) => {
       .update(skills)
       .set({
         description,
-        category,
+        categories,
         repository: manifest.urls?.repository ?? existingSkill.repository,
         license: manifest.license ?? existingSkill.license,
         updatedAt: new Date(),
@@ -209,7 +209,7 @@ skillsRoutes.post('/skills', authed, async (c) => {
       .values({
         name,
         ownerId: userId,
-        category,
+        categories,
         description,
         repository: manifest.urls?.repository,
         license: manifest.license,
@@ -357,7 +357,7 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
   }
 
   if (category) {
-    conditions.push(eq(skills.category, category as (typeof skills.category.enumValues)[number]));
+    conditions.push(sql`${category} = ANY(${skills.categories})`);
   }
 
   if (platform) {
@@ -435,7 +435,7 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
       id: skills.id,
       name: skills.name,
       description: skills.description,
-      category: skills.category,
+      categories: skills.categories,
       repository: skills.repository,
       license: skills.license,
       deprecated: skills.deprecated,
@@ -504,7 +504,7 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
         version: latestVersion?.version ?? null,
         description: row.description,
         author: author?.username ?? 'unknown',
-        category: row.category,
+        categories: row.categories,
         tags: tagRows.map((t) => t.tag),
         platforms: platformRows.map((p) => p.platform),
         downloads: dlCount.total,
@@ -585,7 +585,7 @@ skillsRoutes.get('/skills/:name', async (c) => {
   return c.json({
     name: skill.name,
     description: skill.description,
-    category: skill.category,
+    categories: skill.categories,
     author: {
       username: author?.username ?? 'unknown',
       id: author?.id,
@@ -720,7 +720,7 @@ const UpdateSkillSchema = z
     deprecated: z.boolean().optional(),
     deprecated_msg: z.string().max(500).optional(),
     description: z.string().min(30).max(1024).optional(),
-    category: z.string().optional(),
+    categories: z.array(z.string()).optional(),
   })
   .refine((d) => Object.keys(d).length > 0, { message: 'At least one field must be provided' });
 
@@ -750,7 +750,7 @@ skillsRoutes.patch('/skills/:name', authed, zValidator('json', UpdateSkillSchema
   if (body.deprecated !== undefined) updateFields.deprecated = body.deprecated;
   if (body.deprecated_msg !== undefined) updateFields.deprecatedMsg = body.deprecated_msg;
   if (body.description !== undefined) updateFields.description = body.description;
-  if (body.category !== undefined) updateFields.category = body.category;
+  if (body.categories !== undefined) updateFields.categories = body.categories;
 
   await db.update(skills).set(updateFields).where(eq(skills.id, skill.id));
 

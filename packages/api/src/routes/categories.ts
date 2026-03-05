@@ -6,7 +6,6 @@ import { CATEGORIES, CATEGORY_INFO } from '@spm/shared';
 import type { SkillCategory } from '@spm/shared';
 import type { AppEnv } from '../types.js';
 import { authed } from '../middleware/auth.js';
-import { skills } from '../db/schema.js';
 
 export const categoriesRoutes = new Hono<AppEnv>();
 
@@ -15,18 +14,14 @@ export const categoriesRoutes = new Hono<AppEnv>();
 categoriesRoutes.get('/categories', async (c) => {
   const db = c.get('db');
 
-  // Count skills per category
-  const rows = await db
-    .select({
-      category: skills.category,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(skills)
-    .groupBy(skills.category);
+  // Count skills per category (unnest the categories array)
+  const rows = await db.execute(
+    sql`SELECT unnest(categories) as cat, count(*)::int as count FROM skills GROUP BY cat`,
+  );
 
   const countMap = new Map<string, number>();
-  for (const row of rows) {
-    countMap.set(row.category, row.count);
+  for (const row of rows as unknown as Array<{ cat: string; count: number }>) {
+    countMap.set(row.cat, row.count);
   }
 
   const categories = CATEGORIES.map((slug) => {
@@ -207,23 +202,32 @@ categoriesRoutes.post(
     scores.sort((a, b) => b.score - a.score);
 
     const topScore = scores[0].score;
-    const suggestedCategory = topScore > 0 ? scores[0].slug : manifestCategory;
+
+    // Suggested categories: top scoring categories (up to 3 with score > 0)
+    const suggestedCategories =
+      topScore > 0
+        ? scores
+            .filter((s) => s.score > 0)
+            .slice(0, 3)
+            .map((s) => s.slug)
+        : [manifestCategory];
 
     // Confidence: ratio of top score to total non-zero scores
     const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
     const confidence = totalScore > 0 ? Math.round((topScore / totalScore) * 100) / 100 : 0;
 
-    // Does our suggestion match what the manifest declared?
-    const matchesManifest = suggestedCategory === manifestCategory;
+    // Does our top suggestion match what the manifest declared?
+    const matchesManifest = suggestedCategories[0] === manifestCategory;
 
-    // Alternatives: other categories with >0 score, excluding top
+    // Alternatives: other categories with >0 score, excluding suggested
+    const suggestedSet = new Set(suggestedCategories);
     const alternatives = scores
-      .filter((s) => s.score > 0 && s.slug !== suggestedCategory)
+      .filter((s) => s.score > 0 && !suggestedSet.has(s.slug))
       .slice(0, 3)
       .map((s) => s.slug);
 
     return c.json({
-      suggested_category: suggestedCategory,
+      suggested_categories: suggestedCategories,
       confidence,
       matches_manifest: matchesManifest,
       alternatives,

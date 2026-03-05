@@ -22,7 +22,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
     id: string;
     name: string;
     description: string;
-    category: string;
+    categories: string[];
     ratingAvg: number | null;
     ratingCount: number | null;
     ownerId: string;
@@ -36,7 +36,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
           id: skills.id,
           name: skills.name,
           description: skills.description,
-          category: skills.category,
+          categories: skills.categories,
           ratingAvg: skills.ratingAvg,
           ratingCount: skills.ratingCount,
           ownerId: skills.ownerId,
@@ -58,7 +58,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
           id: skills.id,
           name: skills.name,
           description: skills.description,
-          category: skills.category,
+          categories: skills.categories,
           ratingAvg: skills.ratingAvg,
           ratingCount: skills.ratingCount,
           ownerId: skills.ownerId,
@@ -91,7 +91,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
           id: skills.id,
           name: skills.name,
           description: skills.description,
-          category: skills.category,
+          categories: skills.categories,
           ratingAvg: skills.ratingAvg,
           ratingCount: skills.ratingCount,
           ownerId: skills.ownerId,
@@ -115,7 +115,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
           id: skills.id,
           name: skills.name,
           description: skills.description,
-          category: skills.category,
+          categories: skills.categories,
           ratingAvg: skills.ratingAvg,
           ratingCount: skills.ratingCount,
           ownerId: skills.ownerId,
@@ -172,7 +172,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
           username: author?.username ?? 'unknown',
           trust_tier: author?.trustTier ?? 'registered',
         },
-        category: row.category,
+        categories: row.categories,
         downloads: dlCount.total,
         weekly_downloads: weeklyDlCount.total,
         rating_avg: row.ratingAvg,

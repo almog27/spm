@@ -156,14 +156,16 @@ export const registerPublishCommand = (program: Command): void => {
           api.classifySkill({ name: manifest.name, description: manifest.description }),
         );
 
-        const matches = classification.detected_category === manifest.category;
+        const suggested = classification.suggested_categories;
+        const manifestCats = manifest.categories;
+        const matches =
+          suggested.length > 0 &&
+          manifestCats.includes(suggested[0] as (typeof manifestCats)[number]);
         if (matches) {
-          log(
-            `${icons.success} Detected: ${c.name(classification.detected_category)} \u2014 matches manifest`,
-          );
+          log(`${icons.success} Detected: ${c.name(suggested.join(', '))} \u2014 matches manifest`);
         } else {
           log(
-            `${icons.warning} Detected: ${c.name(classification.detected_category)} \u2014 manifest says ${c.name(manifest.category)}`,
+            `${icons.warning} Detected: ${c.name(suggested.join(', '))} \u2014 manifest says ${c.name(manifestCats.join(', '))}`,
           );
         }
       } catch {

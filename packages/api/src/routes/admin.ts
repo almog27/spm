@@ -293,7 +293,7 @@ adminRoutes.get('/admin/skills', zValidator('query', AdminSkillsQuerySchema), as
       id: skills.id,
       name: skills.name,
       description: skills.description,
-      category: skills.category,
+      categories: skills.categories,
       deprecated: skills.deprecated,
       ownerId: skills.ownerId,
       createdAt: skills.createdAt,
@@ -333,7 +333,7 @@ adminRoutes.get('/admin/skills', zValidator('query', AdminSkillsQuerySchema), as
       return {
         name: row.name,
         description: row.description,
-        category: row.category,
+        categories: row.categories,
         deprecated: row.deprecated,
         author: author?.username ?? 'unknown',
         trust_tier: author?.trustTier ?? 'registered',
