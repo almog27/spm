@@ -30,7 +30,7 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
 
   switch (tab) {
     case 'featured': {
-      // Top-rated skills with > 5 reviews
+      // Top-rated skills with > 5 reviews, fallback to newest if not enough
       rows = await db
         .select({
           id: skills.id,
@@ -45,6 +45,30 @@ trendingRoutes.get('/trending', zValidator('query', TrendingQuerySchema), async 
         .where(sql`${skills.ratingCount} > 5`)
         .orderBy(desc(skills.ratingAvg))
         .limit(limit);
+
+      // Fallback: if not enough rated skills, fill with newest
+      if (rows.length < limit) {
+        const existingIds = rows.map((r) => r.id);
+        const fallback = await db
+          .select({
+            id: skills.id,
+            name: skills.name,
+            description: skills.description,
+            categories: skills.categories,
+            ratingAvg: skills.ratingAvg,
+            ratingCount: skills.ratingCount,
+            ownerId: skills.ownerId,
+          })
+          .from(skills)
+          .where(
+            existingIds.length > 0
+              ? sql`${skills.id} NOT IN (${sql.join(existingIds.map((id) => sql`${id}`), sql`, `)})`
+              : sql`true`,
+          )
+          .orderBy(desc(skills.createdAt))
+          .limit(limit - rows.length);
+        rows = [...rows, ...fallback];
+      }
       break;
     }
 

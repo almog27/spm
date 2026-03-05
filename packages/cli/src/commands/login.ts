@@ -90,7 +90,7 @@ export const registerLoginCommand = (program: Command): void => {
           try {
             const result = await client.pollToken(device_code);
 
-            if ('access_token' in result) {
+            if ('token' in result) {
               return result;
             }
 
@@ -118,7 +118,7 @@ export const registerLoginCommand = (program: Command): void => {
         throw new Error('expired');
       });
 
-      if (!token || !('access_token' in token)) {
+      if (!token || !('token' in token)) {
         logError(
           'Authentication expired',
           'The device code has expired before authorization was completed.',
@@ -129,7 +129,7 @@ export const registerLoginCommand = (program: Command): void => {
       }
 
       // Save token
-      saveToken(token.access_token);
+      saveToken(token.token);
 
       log(`${icons.success} Authenticated as ${c.bold(token.user.username)} (GitHub)`);
       log(`${icons.success} Token saved to ${c.path('~/.spm/config.toml')}`);

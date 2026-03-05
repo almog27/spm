@@ -27,11 +27,10 @@ interface DeviceCodeResponse {
 }
 
 interface TokenResponse {
-  access_token: string;
-  token_type: string;
+  token: string;
   user: {
     username: string;
-    github_username: string;
+    github_login: string;
     trust_tier: string;
   };
 }
@@ -204,6 +203,7 @@ export const createApiClient = (config?: ApiClientConfig) => {
     pollToken: (deviceCode: string) =>
       request<TokenResponse | TokenPendingResponse>('POST', '/auth/token', {
         device_code: deviceCode,
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
       }),
 
     whoami: () => request<WhoamiResponse>('GET', '/auth/whoami'),

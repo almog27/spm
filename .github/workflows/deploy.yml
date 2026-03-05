@@ -74,6 +74,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
       - run: pnpm build --filter @spm/web
+        env:
+          VITE_API_URL: https://registry.skillpkg.dev/api/v1
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy packages/web/dist --project-name=spm-web
         env:
@@ -93,6 +95,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
       - run: pnpm build --filter @spm/admin
+        env:
+          VITE_API_URL: https://registry.skillpkg.dev/api/v1
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy packages/admin/dist --project-name=spm-admin
         env:
