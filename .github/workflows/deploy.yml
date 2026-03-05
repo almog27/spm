@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
 
-# Cancel in-progress deploys for the same branch
 concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: true
@@ -14,9 +13,39 @@ jobs:
     name: Pre-deploy
     uses: ./.github/workflows/ci.yml
 
+  # Detect which packages changed to skip unnecessary deploys
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      admin: ${{ steps.filter.outputs.admin }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'packages/api/**'
+              - 'packages/shared/**'
+              - 'migrations/**'
+            web:
+              - 'packages/web/**'
+              - 'packages/ui/**'
+              - 'packages/shared/**'
+              - 'packages/web-auth/**'
+            admin:
+              - 'packages/admin/**'
+              - 'packages/ui/**'
+              - 'packages/shared/**'
+              - 'packages/web-auth/**'
+
   deploy-api:
     name: Deploy API Worker
-    needs: quality
+    needs: [quality, changes]
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +57,44 @@ jobs:
       - run: pnpm build --filter @spm/shared
       - name: Deploy to Cloudflare Workers
         run: pnpm --filter @spm/api run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-web:
+    name: Deploy Web
+    needs: [quality, changes]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build --filter @spm/web
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/web/dist --project-name=spm-web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-admin:
+    name: Deploy Admin
+    needs: [quality, changes]
+    if: needs.changes.outputs.admin == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build --filter @spm/admin
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/admin/dist --project-name=spm-admin
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
