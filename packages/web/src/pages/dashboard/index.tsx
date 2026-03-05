@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   type Author,
   type Skill,
   type WeeklyData,
   type ActivityEvent,
   type AgentStat,
-} from './dashboard/types';
+} from './types';
 import { MiniChart, StatBox, Tabs, TRUST_CONFIG, type TrustTier } from '@spm/ui';
-import { OverviewTab } from './dashboard/OverviewTab';
-import { SkillsTab } from './dashboard/SkillsTab';
-import { PublishHistoryTab } from './dashboard/PublishHistoryTab';
-import { AnalyticsTab } from './dashboard/AnalyticsTab';
-import { getAuthorStats, searchSkills } from '../lib/api';
+import { OverviewTab } from './OverviewTab';
+import { SkillsTab } from './SkillsTab';
+import { PublishHistoryTab } from './PublishHistoryTab';
+import { AnalyticsTab } from './AnalyticsTab';
+import { getAuthorStats, searchSkills } from '../../lib/api';
 
 const AGENT_COLORS: Record<string, string> = {
   'claude-code': 'var(--color-accent)',

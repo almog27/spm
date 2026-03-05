@@ -6,7 +6,7 @@ import { Home } from './pages/home';
 import { Search } from './pages/Search';
 import { SkillDetail } from './pages/skill-detail';
 import { AuthorProfile } from './pages/AuthorProfile';
-import { Dashboard } from './pages/Dashboard';
+import { Dashboard } from './pages/dashboard';
 import { SignIn } from './pages/SignIn';
 import { Docs } from './pages/Docs';
 import { CLI } from './pages/CLI';
