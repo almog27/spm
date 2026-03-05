@@ -162,7 +162,7 @@ export const Nav = ({
             </Link>
             {user.is_admin && (
               <a
-                href="/admin"
+                href="https://admin.skillpkg.dev"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontSize: 14,
