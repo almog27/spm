@@ -238,8 +238,22 @@ export const registerPublishCommand = (program: Command): void => {
       // 8. Upload
       try {
         const sklBuffer = await readFile(packResult.sklPath);
+
+        // Read SKILL.md if it exists
+        let skillMdContent: string | null = null;
+        try {
+          skillMdContent = await readFile(path.join(process.cwd(), 'SKILL.md'), 'utf-8');
+        } catch {
+          // SKILL.md not found — continue without it
+        }
+
         const result = await withSpinner('Publishing to registry...', () =>
-          api.publishSkill(sklBuffer.buffer as ArrayBuffer, manifest, signatureBundle),
+          api.publishSkill(
+            sklBuffer.buffer as ArrayBuffer,
+            manifest,
+            signatureBundle,
+            skillMdContent,
+          ),
         );
 
         log(`${icons.success} Published ${c.name(manifest.name)}@${c.version(manifest.version)}`);

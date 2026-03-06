@@ -380,6 +380,9 @@ describe('publish command with signing', () => {
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
       }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
+      }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
 
@@ -409,6 +412,7 @@ describe('publish command with signing', () => {
       expect.anything(),
       expect.objectContaining({ name: 'my-skill' }),
       '{"mediaType":"test-bundle"}',
+      null,
     );
 
     const output = mockLog.mock.calls.map((call: unknown[]) => call[0]).join('\n');
@@ -422,6 +426,9 @@ describe('publish command with signing', () => {
       const p = String(filePath);
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
+      }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
       }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
@@ -450,6 +457,7 @@ describe('publish command with signing', () => {
       expect.anything(),
       expect.objectContaining({ name: 'my-skill' }),
       null,
+      null,
     );
 
     const output = mockLog.mock.calls.map((call: unknown[]) => call[0]).join('\n');
@@ -462,6 +470,9 @@ describe('publish command with signing', () => {
       const p = String(filePath);
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
+      }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
       }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
@@ -589,6 +600,9 @@ describe('publish command with --sign flag', () => {
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
       }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
+      }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
 
@@ -619,6 +633,7 @@ describe('publish command with --sign flag', () => {
       expect.anything(),
       expect.objectContaining({ name: 'my-skill' }),
       '{"mediaType":"interactive-bundle"}',
+      null,
     );
 
     const output = mockLog.mock.calls.map((call: unknown[]) => call[0]).join('\n');
@@ -632,6 +647,9 @@ describe('publish command with --sign flag', () => {
       const p = String(filePath);
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
+      }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
       }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
@@ -658,6 +676,7 @@ describe('publish command with --sign flag', () => {
       expect.anything(),
       expect.objectContaining({ name: 'my-skill' }),
       null,
+      null,
     );
 
     const output = mockLog.mock.calls.map((call: unknown[]) => call[0]).join('\n');
@@ -670,6 +689,9 @@ describe('publish command with --sign flag', () => {
       const p = String(filePath);
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
+      }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
       }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
@@ -704,6 +726,9 @@ describe('publish command with --sign flag', () => {
       if (p.endsWith('manifest.json')) {
         return Promise.resolve(validManifest);
       }
+      if (p.endsWith('SKILL.md')) {
+        return Promise.reject(new Error('ENOENT'));
+      }
       return Promise.resolve(Buffer.from('fake-skl-content'));
     });
 
@@ -728,6 +753,7 @@ describe('publish command with --sign flag', () => {
     expect(mockPublishSkill).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ name: 'my-skill' }),
+      null,
       null,
     );
   });

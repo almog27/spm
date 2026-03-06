@@ -478,39 +478,6 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             </Card>
           )}
 
-          {/* Skill Content tab */}
-          {activeTab === 'skill-content' && (
-            <Card>
-              <div style={{ padding: '14px 18px' }}>
-                {versionData?.skill_md ? (
-                  <pre
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 12,
-                      color: 'var(--color-text-dim)',
-                      lineHeight: 1.6,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      margin: 0,
-                    }}
-                  >
-                    {versionData.skill_md}
-                  </pre>
-                ) : (
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 12,
-                      color: 'var(--color-text-faint)',
-                    }}
-                  >
-                    No SKILL.md found in this version&apos;s package.
-                  </span>
-                )}
-              </div>
-            </Card>
-          )}
-
           {/* Definition tab */}
           {activeTab === 'definition' && (
             <Card>

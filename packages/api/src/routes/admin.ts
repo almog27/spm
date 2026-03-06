@@ -383,9 +383,9 @@ adminRoutes.get('/admin/skills/:name/versions/:version', async (c) => {
     return c.json(createApiError('VERSION_NOT_FOUND'), ERROR_CODES.VERSION_NOT_FOUND.status);
   }
 
-  // Extract SKILL.md from R2 if the package exists
-  let skillMd: string | null = null;
-  if (ver.sklStorageKey) {
+  // Use skill_md from DB if available, otherwise extract from R2 (legacy packages)
+  let skillMd: string | null = ver.skillMd ?? null;
+  if (!skillMd && ver.sklStorageKey) {
     try {
       const obj = await getObject(c.env.R2_BUCKET, ver.sklStorageKey);
       if (obj) {
