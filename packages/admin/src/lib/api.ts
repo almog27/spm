@@ -245,6 +245,47 @@ export const updateError = (
     body: JSON.stringify({ status, resolution }),
   });
 
+// -- Public skill endpoints (used for inline detail) --
+
+export interface SkillDetailVersion {
+  version: string;
+  published_at: string;
+  yanked: boolean;
+  downloads: number;
+}
+
+export interface SkillDetailResponse {
+  name: string;
+  description: string;
+  categories: string[];
+  latest_version: string | null;
+  author: { username: string; trust_tier: string };
+  deprecated: boolean;
+  created_at: string;
+  updated_at: string;
+  versions: SkillDetailVersion[];
+  downloads: number;
+}
+
+export interface SkillVersionResponse {
+  name: string;
+  version: string;
+  readme_md: string | null;
+  manifest: Record<string, unknown>;
+  published_at: string;
+  yanked: boolean;
+}
+
+export const getSkillDetail = (token: string, name: string): Promise<SkillDetailResponse> =>
+  apiFetch(`/skills/${encodeURIComponent(name)}`, token);
+
+export const getSkillVersion = (
+  token: string,
+  name: string,
+  version: string,
+): Promise<SkillVersionResponse> =>
+  apiFetch(`/skills/${encodeURIComponent(name)}/${encodeURIComponent(version)}`, token);
+
 // -- Stats --
 
 export interface AdminStatsResponse {

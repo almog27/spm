@@ -13,13 +13,17 @@ import {
 } from '@spm/ui';
 import { getAdminUsers, updateUserRole, updateUserTrust, type AdminUserItem } from '../lib/api';
 import { useAdminData } from '../lib/useAdminData';
+import { useSearchParamsState } from '../lib/useSearchParamsState';
 import { LoadingState, ErrorState } from './DataState';
 
 export const UsersTab = () => {
   const { token } = useAuth();
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [trustFilter, setTrustFilter] = useState('all');
+  const { get, set } = useSearchParamsState();
+
+  const search = get('search');
+  const roleFilter = get('role', 'all');
+  const trustFilter = get('trust', 'all');
+
   const [confirmAction, setConfirmAction] = useState<{
     username: string;
     action: 'grant' | 'revoke';
@@ -93,7 +97,7 @@ export const UsersTab = () => {
       key: 'role',
       label: roleFilter === 'admin' ? 'Admins' : 'Users',
       color: roleFilter === 'admin' ? 'red' : 'blue',
-      clear: () => setRoleFilter('all'),
+      clear: () => set({ role: null }),
     });
   }
   if (trustFilter !== 'all') {
@@ -102,7 +106,7 @@ export const UsersTab = () => {
       key: 'trust',
       label: cfg?.label ?? trustFilter,
       color: cfg?.color ?? 'text-dim',
-      clear: () => setTrustFilter('all'),
+      clear: () => set({ trust: null }),
     });
   }
 
@@ -132,7 +136,7 @@ export const UsersTab = () => {
       >
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(v) => set({ search: v || null })}
           placeholder="Search username or email..."
         />
 
@@ -145,7 +149,7 @@ export const UsersTab = () => {
             { value: 'admin', label: 'Admins', color: 'red' },
             { value: 'user', label: 'Users' },
           ]}
-          onChange={setRoleFilter}
+          onChange={(v) => set({ role: v === 'all' ? null : v })}
         />
 
         <FilterDropdown
@@ -158,7 +162,7 @@ export const UsersTab = () => {
             { value: 'scanned', label: 'Scanned', color: 'blue' },
             { value: 'registered', label: 'Registered', color: 'text-dim' },
           ]}
-          onChange={setTrustFilter}
+          onChange={(v) => set({ trust: v === 'all' ? null : v })}
         />
       </div>
 
@@ -177,10 +181,7 @@ export const UsersTab = () => {
           ))}
           {activeFilters.length > 1 && (
             <span
-              onClick={() => {
-                setRoleFilter('all');
-                setTrustFilter('all');
-              }}
+              onClick={() => set({ role: null, trust: null })}
               style={{
                 fontFamily: 'var(--font-sans)',
                 fontSize: 11,
@@ -288,8 +289,7 @@ export const UsersTab = () => {
               }}
             >
               Change <strong style={{ color: 'var(--color-cyan)' }}>@{trustAction.username}</strong>{' '}
-              trust tier from{' '}
-              <strong>{trustAction.currentTier}</strong> to{' '}
+              trust tier from <strong>{trustAction.currentTier}</strong> to{' '}
               <strong style={{ color: 'var(--color-accent)' }}>{trustAction.newTier}</strong>?
             </div>
             <div

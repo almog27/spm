@@ -3,14 +3,20 @@ import { useAuth } from '@spm/web-auth';
 import { Button, Card, SearchInput, StatusBadge, TRUST_CONFIG, type TrustTier } from '@spm/ui';
 import { getAdminSkills, yankSkill } from '../lib/api';
 import { useAdminData } from '../lib/useAdminData';
+import { useSearchParamsState } from '../lib/useSearchParamsState';
 import { LoadingState, ErrorState } from './DataState';
+import { SkillDetailPane } from './SkillDetailPane';
 
 const WEB_URL = import.meta.env.VITE_WEB_URL || 'https://skillpkg.dev';
 
 export const SkillModeration = () => {
   const { token } = useAuth();
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const { get, getNumber, set } = useSearchParamsState();
+
+  const search = get('search');
+  const page = getNumber('page', 1);
+  const selectedSkill = get('skill');
+
   const [yankTarget, setYankTarget] = useState<{ name: string; version: string } | null>(null);
   const [yankReason, setYankReason] = useState('');
 
@@ -24,6 +30,11 @@ export const SkillModeration = () => {
     setYankReason('');
     refetch();
   };
+
+  // Show inline detail if a skill is selected
+  if (selectedSkill) {
+    return <SkillDetailPane skillName={selectedSkill} />;
+  }
 
   if (isLoading) return <LoadingState message="Loading skills..." />;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
@@ -51,7 +62,7 @@ export const SkillModeration = () => {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(v) => set({ search: v || null, page: null })}
           placeholder="Search skills or authors..."
         />
         <span
@@ -84,7 +95,11 @@ export const SkillModeration = () => {
               marginBottom: 10,
             }}
           >
-            Yank <strong style={{ color: 'var(--color-cyan)' }}>{yankTarget.name}@{yankTarget.version}</strong>?
+            Yank{' '}
+            <strong style={{ color: 'var(--color-cyan)' }}>
+              {yankTarget.name}@{yankTarget.version}
+            </strong>
+            ?
           </div>
           <input
             value={yankReason}
@@ -106,7 +121,14 @@ export const SkillModeration = () => {
           />
           <div style={{ display: 'flex', gap: 8 }}>
             <Button label="Yank" color="red" onClick={handleYankConfirm} />
-            <Button label="Cancel" color="text-dim" onClick={() => { setYankTarget(null); setYankReason(''); }} />
+            <Button
+              label="Cancel"
+              color="text-dim"
+              onClick={() => {
+                setYankTarget(null);
+                setYankReason('');
+              }}
+            />
           </div>
         </div>
       )}
@@ -208,13 +230,34 @@ export const SkillModeration = () => {
                   label="View"
                   color="blue"
                   small
-                  onClick={() => window.open(`${WEB_URL}/skills/${skill.name}`, '_blank')}
+                  onClick={() => set({ skill: skill.name })}
                 />
+                <a
+                  href={`${WEB_URL}/skills/${skill.name}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open on web"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    color: 'var(--color-text-faint)',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '2px 6px',
+                  }}
+                >
+                  ↗
+                </a>
                 <Button
                   label="Yank"
                   color="red"
                   small
-                  onClick={() => skill.latest_version ? setYankTarget({ name: skill.name, version: skill.latest_version }) : undefined}
+                  onClick={() =>
+                    skill.latest_version
+                      ? setYankTarget({ name: skill.name, version: skill.latest_version })
+                      : undefined
+                  }
                 />
               </div>
             </div>
@@ -229,7 +272,7 @@ export const SkillModeration = () => {
             label="Previous"
             color="text-dim"
             small
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => set({ page: Math.max(1, page - 1) })}
           />
           <span
             style={{
@@ -245,7 +288,7 @@ export const SkillModeration = () => {
             label="Next"
             color="text-dim"
             small
-            onClick={() => setPage((p) => Math.min(data.pages, p + 1))}
+            onClick={() => set({ page: Math.min(data.pages, page + 1) })}
           />
         </div>
       )}

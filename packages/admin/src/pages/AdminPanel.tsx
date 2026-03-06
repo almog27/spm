@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { Badge, Tabs } from '@spm/ui';
 import { useAuth } from '@spm/web-auth';
+import { useSearchParamsState } from '../lib/useSearchParamsState';
 import { FlaggedQueue } from '../components/FlaggedQueue';
 import { SkillModeration } from '../components/SkillModeration';
 import { ScanAnalytics } from '../components/ScanAnalytics';
@@ -17,9 +18,28 @@ const TABS = [
   { id: 'errors', label: 'Errors' },
 ];
 
+const TAB_PARAMS: Record<string, string[]> = {
+  skills: ['search', 'page', 'skill'],
+  trust: ['search', 'role', 'trust'],
+};
+
 export const AdminPanel = () => {
-  const [tab, setTab] = useState('flagged');
+  const { get, set } = useSearchParamsState();
+  const tab = get('tab', 'flagged');
   const { user, signOut } = useAuth();
+
+  const handleTabChange = useCallback(
+    (newTab: string) => {
+      // Clear params belonging to the old tab
+      const oldTabParams = TAB_PARAMS[tab] ?? [];
+      const clears: Record<string, null> = {};
+      for (const p of oldTabParams) {
+        clears[p] = null;
+      }
+      set({ ...clears, tab: newTab === 'flagged' ? null : newTab });
+    },
+    [tab, set],
+  );
 
   return (
     <div className="bg-bg text-text-primary min-h-screen">
@@ -126,7 +146,7 @@ export const AdminPanel = () => {
           Admin Panel
         </h1>
 
-        <Tabs tabs={TABS} active={tab} onChange={setTab} />
+        <Tabs tabs={TABS} active={tab} onChange={handleTabChange} />
 
         {tab === 'flagged' && <FlaggedQueue />}
         {tab === 'skills' && <SkillModeration />}
