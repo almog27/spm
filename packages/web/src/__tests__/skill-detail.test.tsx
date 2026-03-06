@@ -19,6 +19,7 @@ const mockPdfSkill = {
   license: 'MIT',
   repository: 'https://github.com/anthropic/spm-pdf',
   deprecated: false,
+  readme_md: null,
   latest_version: '2.0.3',
   downloads: 45100,
   weekly_downloads: 3200,
