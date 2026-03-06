@@ -15,6 +15,8 @@ import {
   publishAttempts,
   downloads,
 } from '../db/schema.js';
+import { getObject } from '../services/r2.js';
+import { extractSkillMd } from '../security/extract.js';
 
 export const adminRoutes = new Hono<AppEnv>();
 
@@ -381,10 +383,25 @@ adminRoutes.get('/admin/skills/:name/versions/:version', async (c) => {
     return c.json(createApiError('VERSION_NOT_FOUND'), ERROR_CODES.VERSION_NOT_FOUND.status);
   }
 
+  // Extract SKILL.md from R2 if the package exists
+  let skillMd: string | null = null;
+  if (ver.sklStorageKey) {
+    try {
+      const obj = await getObject(c.env.R2_BUCKET, ver.sklStorageKey);
+      if (obj) {
+        const data = await obj.arrayBuffer();
+        skillMd = await extractSkillMd(data);
+      }
+    } catch {
+      // Non-critical — SKILL.md extraction failed, continue without it
+    }
+  }
+
   return c.json({
     name: skill.name,
     version: ver.version,
     readme_md: ver.readmeMd,
+    skill_md: skillMd,
     manifest: ver.manifest,
     published_at: ver.publishedAt.toISOString(),
     yanked: ver.yanked,

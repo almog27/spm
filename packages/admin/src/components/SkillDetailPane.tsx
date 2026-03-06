@@ -519,11 +519,11 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             </Card>
           )}
 
-          {/* Skill Content tab — full SKILL.md for admin review */}
+          {/* Skill Content tab — full SKILL.md extracted from .skl package */}
           {activeTab === 'skill-content' && (
             <Card>
               <div style={{ padding: '14px 18px' }}>
-                {versionData?.readme_md ? (
+                {versionData?.skill_md ? (
                   <pre
                     style={{
                       fontFamily: 'var(--font-mono)',
@@ -535,7 +535,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                       margin: 0,
                     }}
                   >
-                    {versionData.readme_md}
+                    {versionData.skill_md}
                   </pre>
                 ) : (
                   <span
@@ -545,7 +545,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                       color: 'var(--color-text-faint)',
                     }}
                   >
-                    No skill content available for this version.
+                    No SKILL.md found in this version&apos;s package.
                   </span>
                 )}
               </div>

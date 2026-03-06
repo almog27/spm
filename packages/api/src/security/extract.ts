@@ -119,6 +119,19 @@ const decompressGzip = async (compressed: ArrayBuffer): Promise<ArrayBuffer> => 
 };
 
 /**
+ * Extract SKILL.md content from a .skl (tar.gz) package.
+ * Returns the content string or null if not found.
+ */
+export const extractSkillMd = async (packageData: ArrayBuffer): Promise<string | null> => {
+  const tarBuffer = await decompressGzip(packageData);
+  const files = parseTar(tarBuffer);
+  const skillFile = files.find(
+    (f) => f.name.toLowerCase() === 'skill.md' || f.name.toLowerCase().endsWith('/skill.md'),
+  );
+  return skillFile?.content ?? null;
+};
+
+/**
  * Extract text files from a .skl (tar.gz) package for security scanning.
  * Also accepts a manifest description to scan as a virtual file.
  */
