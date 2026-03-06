@@ -191,24 +191,28 @@ export const registerPublishCommand = (program: Command): void => {
         return;
       }
 
-      // 7. Sign the package (optional — graceful degradation)
+      // 7. Sign the package (CI only — requires OIDC identity token)
       let signatureBundle: string | null = null;
       let signerIdentity: string | null = null;
-      try {
-        log(`${icons.lock} Signing...`);
-        const signResult = await withSpinner('Signing with Sigstore...', () =>
-          signPackage(packResult.sklPath),
-        );
+      const isCI = !!(process.env.CI || process.env.GITHUB_ACTIONS || process.env.GITLAB_CI);
 
-        if (signResult) {
-          signatureBundle = signResult.bundle;
-          signerIdentity = signResult.signerIdentity;
-          log(`${icons.success} Signed by ${c.trust(signResult.signerIdentity)} (Sigstore)`);
-        } else {
-          log(`${icons.warning} ${c.warn('Signing unavailable, publishing unsigned')}`);
+      if (isCI) {
+        try {
+          log(`${icons.lock} Signing...`);
+          const signResult = await withSpinner('Signing with Sigstore...', () =>
+            signPackage(packResult.sklPath),
+          );
+
+          if (signResult) {
+            signatureBundle = signResult.bundle;
+            signerIdentity = signResult.signerIdentity;
+            log(`${icons.success} Signed by ${c.trust(signResult.signerIdentity)} (Sigstore)`);
+          } else {
+            log(`${icons.warning} ${c.warn('Signing unavailable in this CI environment')}`);
+          }
+        } catch {
+          log(`${icons.warning} ${c.warn('Signing unavailable in this CI environment')}`);
         }
-      } catch {
-        log(`${icons.warning} ${c.warn('Signing unavailable, publishing unsigned')}`);
       }
 
       log('');

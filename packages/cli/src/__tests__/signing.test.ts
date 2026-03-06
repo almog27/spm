@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Command } from 'commander';
 
 // -- Mock output utilities --
@@ -340,10 +340,21 @@ describe('verify command', () => {
 // ============================================
 
 describe('publish command with signing', () => {
+  const originalCI = process.env.CI;
+
   beforeEach(() => {
+    process.env.CI = 'true';
     mockOutputMode = 'default';
     mockToken = 'test-token-123';
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    if (originalCI === undefined) {
+      delete process.env.CI;
+    } else {
+      process.env.CI = originalCI;
+    }
   });
 
   const validManifest = JSON.stringify({
@@ -440,7 +451,7 @@ describe('publish command with signing', () => {
     );
 
     const output = mockLog.mock.calls.map((call: unknown[]) => call[0]).join('\n');
-    expect(output).toContain('Signing unavailable');
+    expect(output).toContain('Signing unavailable in this CI environment');
     expect(output).toContain('Published my-skill@1.0.0');
   });
 
@@ -476,7 +487,7 @@ describe('publish command with signing', () => {
     expect(mockPublishSkill).toHaveBeenCalled();
 
     const output = mockLog.mock.calls.map((call: unknown[]) => call[0]).join('\n');
-    expect(output).toContain('Signing unavailable');
+    expect(output).toContain('Signing unavailable in this CI environment');
   });
 });
 
