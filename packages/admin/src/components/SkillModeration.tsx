@@ -138,7 +138,7 @@ export const SkillModeration = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 80px 80px 90px 110px',
+            gridTemplateColumns: '1fr 80px 80px 80px 90px',
             gap: 10,
             padding: '8px 16px',
             borderBottom: '1px solid var(--color-border-default)',
@@ -152,7 +152,7 @@ export const SkillModeration = () => {
           <span>Skill</span>
           <span>Status</span>
           <span>Trust</span>
-          <span style={{ textAlign: 'right' }}>Published</span>
+          <span>Published</span>
           <span style={{ textAlign: 'right' }}>Actions</span>
         </div>
 
@@ -166,7 +166,7 @@ export const SkillModeration = () => {
               key={skill.name}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 80px 80px 90px 110px',
+                gridTemplateColumns: '1fr 80px 80px 80px 90px',
                 gap: 10,
                 padding: '10px 16px',
                 borderBottom: '1px solid rgba(26,29,39,0.25)',
@@ -175,11 +175,18 @@ export const SkillModeration = () => {
             >
               <div>
                 <span
+                  onClick={() => set({ skill: skill.name })}
                   style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 13,
                     color: 'var(--color-cyan)',
                     fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') set({ skill: skill.name });
                   }}
                 >
                   {skill.name}
@@ -225,13 +232,14 @@ export const SkillModeration = () => {
               >
                 {skill.updated_at.slice(0, 10).slice(5)}
               </span>
-              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                <Button
-                  label="View"
-                  color="blue"
-                  small
-                  onClick={() => set({ skill: skill.name })}
-                />
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 4,
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                }}
+              >
                 <a
                   href={`${WEB_URL}/skills/${skill.name}`}
                   target="_blank"
@@ -239,12 +247,10 @@ export const SkillModeration = () => {
                   title="Open on web"
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 11,
+                    fontSize: 12,
                     color: 'var(--color-text-faint)',
                     textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '2px 6px',
+                    padding: '2px 4px',
                   }}
                 >
                   ↗

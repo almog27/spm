@@ -301,7 +301,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             </Card>
           </div>
 
-          {/* Manifest */}
+          {/* Skill Definition (manifest) */}
           {manifest && (
             <div style={{ marginTop: 16 }}>
               <h3
@@ -313,45 +313,23 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                   marginBottom: 8,
                 }}
               >
-                Manifest
+                Skill Definition
               </h3>
               <Card>
                 <div style={{ padding: '14px 18px' }}>
-                  {(
-                    ['description', 'categories', 'platforms', 'dependencies', 'engine'] as const
-                  ).map((field) => {
-                    const val = manifest[field];
-                    if (val === undefined || val === null) return null;
-                    return (
-                      <div key={field} style={{ marginBottom: 8 }}>
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: 11,
-                            color: 'var(--color-text-muted)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                          }}
-                        >
-                          {field}
-                        </span>
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: 12,
-                            color: 'var(--color-text-dim)',
-                            marginTop: 2,
-                          }}
-                        >
-                          {Array.isArray(val)
-                            ? val.join(', ') || '—'
-                            : typeof val === 'object'
-                              ? JSON.stringify(val)
-                              : String(val)}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <pre
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 12,
+                      color: 'var(--color-text-dim)',
+                      lineHeight: 1.6,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      margin: 0,
+                    }}
+                  >
+                    {JSON.stringify(manifest, null, 2)}
+                  </pre>
                 </div>
               </Card>
             </div>
