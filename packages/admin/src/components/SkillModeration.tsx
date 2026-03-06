@@ -5,19 +5,23 @@ import { getAdminSkills, yankSkill } from '../lib/api';
 import { useAdminData } from '../lib/useAdminData';
 import { LoadingState, ErrorState } from './DataState';
 
+const WEB_URL = import.meta.env.VITE_WEB_URL || 'https://skillpkg.dev';
+
 export const SkillModeration = () => {
   const { token } = useAuth();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [yankTarget, setYankTarget] = useState<{ name: string; version: string } | null>(null);
+  const [yankReason, setYankReason] = useState('');
 
   const fetchSkills = useCallback((t: string) => getAdminSkills(t, page, 50), [page]);
   const { data, isLoading, error, refetch } = useAdminData(fetchSkills, [page]);
 
-  const handleYank = async (name: string, version: string | null) => {
-    if (!token || !version) return;
-    const reason = prompt(`Reason for yanking ${name}@${version}:`);
-    if (!reason) return;
-    await yankSkill(token, name, version, reason);
+  const handleYankConfirm = async () => {
+    if (!token || !yankTarget || !yankReason.trim()) return;
+    await yankSkill(token, yankTarget.name, yankTarget.version, yankReason.trim());
+    setYankTarget(null);
+    setYankReason('');
     refetch();
   };
 
@@ -60,6 +64,52 @@ export const SkillModeration = () => {
           {data?.total ?? 0} total skills
         </span>
       </div>
+
+      {/* Yank confirmation */}
+      {yankTarget && (
+        <div
+          style={{
+            padding: '14px 18px',
+            marginBottom: 14,
+            border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: 10,
+            background: 'rgba(239,68,68,0.05)',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 14,
+              color: 'var(--color-text-primary)',
+              marginBottom: 10,
+            }}
+          >
+            Yank <strong style={{ color: 'var(--color-cyan)' }}>{yankTarget.name}@{yankTarget.version}</strong>?
+          </div>
+          <input
+            value={yankReason}
+            onChange={(e) => setYankReason(e.target.value)}
+            placeholder="Reason for yanking (required)..."
+            style={{
+              width: '100%',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 13,
+              padding: '8px 12px',
+              background: 'var(--color-bg)',
+              color: 'var(--color-text-primary)',
+              border: '1px solid var(--color-border-default)',
+              borderRadius: 6,
+              outline: 'none',
+              marginBottom: 10,
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button label="Yank" color="red" onClick={handleYankConfirm} />
+            <Button label="Cancel" color="text-dim" onClick={() => { setYankTarget(null); setYankReason(''); }} />
+          </div>
+        </div>
+      )}
 
       <Card>
         {/* Header row */}
@@ -154,12 +204,17 @@ export const SkillModeration = () => {
                 {skill.updated_at.slice(0, 10).slice(5)}
               </span>
               <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                <Button label="View" color="blue" small />
+                <Button
+                  label="View"
+                  color="blue"
+                  small
+                  onClick={() => window.open(`${WEB_URL}/skills/${skill.name}`, '_blank')}
+                />
                 <Button
                   label="Yank"
                   color="red"
                   small
-                  onClick={() => handleYank(skill.name, skill.latest_version)}
+                  onClick={() => skill.latest_version ? setYankTarget({ name: skill.name, version: skill.latest_version }) : undefined}
                 />
               </div>
             </div>
