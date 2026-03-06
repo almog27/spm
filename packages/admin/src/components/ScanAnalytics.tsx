@@ -1,15 +1,15 @@
-import { useCallback } from 'react';
+import { useAuth } from '@spm/web-auth';
+import { useQuery } from '@tanstack/react-query';
 import { Card, StatBox } from '@spm/ui';
-import { getAdminStats } from '../lib/api';
-import { useAdminData } from '../lib/useAdminData';
+import { adminStatsQuery } from './FlaggedQueue.queries';
 import { LoadingState, ErrorState } from './DataState';
 
 export const ScanAnalytics = () => {
-  const fetchStats = useCallback((t: string) => getAdminStats(t), []);
-  const { data: stats, isLoading, error, refetch } = useAdminData(fetchStats);
+  const { token } = useAuth();
+  const { data: stats, isLoading, error, refetch } = useQuery(adminStatsQuery(token ?? ''));
 
   if (isLoading) return <LoadingState message="Loading scan analytics..." />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
   if (!stats) return <LoadingState />;
 
   const totalScans =

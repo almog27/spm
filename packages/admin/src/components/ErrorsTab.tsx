@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
 import { useAuth } from '@spm/web-auth';
+import { useQuery } from '@tanstack/react-query';
 import { Badge, Button, Card, StatBox, StatusBadge } from '@spm/ui';
-import { getAdminErrors, updateError } from '../lib/api';
-import { useAdminData } from '../lib/useAdminData';
+import { updateError } from '../lib/api';
+import { errorsQuery } from './ErrorsTab.queries';
 import { LoadingState, ErrorState, EmptyState } from './DataState';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -16,8 +16,7 @@ const TYPE_COLORS: Record<string, string> = {
 export const ErrorsTab = () => {
   const { token } = useAuth();
 
-  const fetchErrors = useCallback((t: string) => getAdminErrors(t), []);
-  const { data, isLoading, error, refetch } = useAdminData(fetchErrors);
+  const { data, isLoading, error, refetch } = useQuery(errorsQuery(token ?? ''));
 
   const handleStatusChange = async (id: string, status: string, resolution?: string) => {
     if (!token) return;
@@ -26,7 +25,7 @@ export const ErrorsTab = () => {
   };
 
   if (isLoading) return <LoadingState message="Loading errors..." />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const errors = data?.errors ?? [];
   const openErrors = errors.filter((e) => e.status === 'open');

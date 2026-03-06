@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@spm/web-auth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Sparkline, TRUST_CONFIG, type TrustTier } from '@spm/ui';
 import {
-  getSkillDetail,
-  getSkillVersion,
   getAdminSkillVersion,
-  getSkillDownloads,
   yankSkill,
   blockSkill,
   unblockSkill,
-  type SkillDetailResponse,
-  type SkillVersionResponse,
   type SkillDownloadsDay,
 } from '../lib/api';
+import {
+  adminSkillDetailQuery,
+  adminSkillVersionQuery,
+  adminSkillDownloadsQuery,
+} from './SkillDetailPane.queries';
 import { useSearchParamsState } from '../lib/useSearchParamsState';
 
 const WEB_URL = import.meta.env.VITE_WEB_URL || 'https://skillpkg.dev';
@@ -32,87 +33,48 @@ const buildSparklineData = (days: SkillDownloadsDay[]): number[] => {
   return result;
 };
 
-type DetailTab = 'readme' | 'skill-content' | 'definition' | 'security';
+type DetailTab = 'readme' | 'definition' | 'security';
 
 export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
   const { token } = useAuth();
+  const queryClient = useQueryClient();
   const { set } = useSearchParamsState();
-  const [detail, setDetail] = useState<SkillDetailResponse | null>(null);
-  const [versionData, setVersionData] = useState<SkillVersionResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [readmeExpanded, setReadmeExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<DetailTab>('readme');
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [versionLoading, setVersionLoading] = useState(false);
+  const [manualVersionData, setManualVersionData] = useState<{
+    readme_md: string | null;
+    manifest: Record<string, unknown>;
+    signed: boolean;
+  } | null>(null);
   const [yankTarget, setYankTarget] = useState<string | null>(null);
   const [yankReason, setYankReason] = useState('');
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [blockReason, setBlockReason] = useState('');
-  const [sparklineData, setSparklineData] = useState<number[] | null>(null);
 
-  useEffect(() => {
-    if (!token) return;
-    let cancelled = false;
+  const {
+    data: detail,
+    isLoading: loading,
+    error,
+  } = useQuery(adminSkillDetailQuery(token ?? '', skillName));
 
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const d = await getSkillDetail(token, skillName);
-        if (cancelled) return;
-        setDetail(d);
+  const latestVersion = detail?.latest_version ?? '';
+  const { data: latestVersionData } = useQuery(
+    adminSkillVersionQuery(token ?? '', skillName, latestVersion),
+  );
 
-        if (d.latest_version) {
-          const v = await getSkillVersion(token, skillName, d.latest_version);
-          if (cancelled) return;
-          setVersionData(v);
-        }
+  const { data: downloadsData } = useQuery(adminSkillDownloadsQuery(token ?? '', skillName));
+  const sparklineData = downloadsData ? buildSparklineData(downloadsData.days) : null;
 
-        // Fetch downloads for sparkline (non-blocking)
-        getSkillDownloads(token, skillName)
-          .then((res) => {
-            if (!cancelled) setSparklineData(buildSparklineData(res.days));
-          })
-          .catch(() => {
-            // Sparkline is non-critical; silently skip on error
-          });
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load skill');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [token, skillName]);
-
-  useEffect(() => {
-    if (!token) return;
-    let cancelled = false;
-    getSkillDownloads(token, skillName)
-      .then((res) => {
-        if (!cancelled) setSparklineData(buildSparklineData(res.days));
-      })
-      .catch(() => {
-        // Sparkline is non-critical
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [token, skillName]);
+  const versionData = manualVersionData ?? latestVersionData ?? null;
 
   const handleYank = async () => {
     if (!token || !yankTarget || !yankReason.trim()) return;
     await yankSkill(token, skillName, yankTarget, yankReason.trim());
     setYankTarget(null);
     setYankReason('');
-    // Reload detail
-    const d = await getSkillDetail(token, skillName);
-    setDetail(d);
+    queryClient.invalidateQueries({ queryKey: ['admin', 'skillDetail', skillName] });
   };
 
   const handleVersionChange = async (version: string) => {
@@ -121,7 +83,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
     setVersionLoading(true);
     try {
       const v = await getAdminSkillVersion(token, skillName, version);
-      setVersionData(v);
+      setManualVersionData(v);
       setReadmeExpanded(false);
     } catch {
       // Keep existing version data on error
@@ -135,15 +97,13 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
     await blockSkill(token, skillName, blockReason.trim());
     setShowBlockConfirm(false);
     setBlockReason('');
-    const d = await getSkillDetail(token, skillName);
-    setDetail(d);
+    queryClient.invalidateQueries({ queryKey: ['admin', 'skillDetail', skillName] });
   };
 
   const handleUnblock = async () => {
     if (!token) return;
     await unblockSkill(token, skillName);
-    const d = await getSkillDetail(token, skillName);
-    setDetail(d);
+    queryClient.invalidateQueries({ queryKey: ['admin', 'skillDetail', skillName] });
   };
 
   if (loading) {
@@ -162,7 +122,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
     return (
       <div style={{ padding: 24 }}>
         <Button
-          label="← Back to list"
+          label="\u2190 Back to list"
           color="text-dim"
           small
           onClick={() => set({ skill: null })}
@@ -179,7 +139,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             color: 'var(--color-text-primary)',
           }}
         >
-          {error ?? 'Skill not found'}
+          {error?.message ?? 'Skill not found'}
         </div>
       </div>
     );
@@ -201,7 +161,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
       {/* Back button */}
       <div style={{ marginBottom: 16 }}>
         <Button
-          label="← Back to list"
+          label="\u2190 Back to list"
           color="text-dim"
           small
           onClick={() => set({ skill: null })}
@@ -422,7 +382,6 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             {(
               [
                 { id: 'readme' as const, label: 'README' },
-                { id: 'skill-content' as const, label: 'Skill Content' },
                 { id: 'definition' as const, label: 'Definition' },
                 { id: 'security' as const, label: 'Security' },
               ] as const
@@ -519,7 +478,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             </Card>
           )}
 
-          {/* Skill Content tab — full SKILL.md extracted from .skl package */}
+          {/* Skill Content tab */}
           {activeTab === 'skill-content' && (
             <Card>
               <div style={{ padding: '14px 18px' }}>

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import {
   type Author,
@@ -12,7 +13,7 @@ import { OverviewTab } from './OverviewTab';
 import { SkillsTab } from './SkillsTab';
 import { PublishHistoryTab } from './PublishHistoryTab';
 import { AnalyticsTab } from './AnalyticsTab';
-import { getAuthorStats, searchSkills } from '../../lib/api';
+import { authorStatsQuery, dashboardSkillsQuery } from './queries';
 
 const AGENT_COLORS: Record<string, string> = {
   'claude-code': 'var(--color-accent)',
@@ -28,103 +29,61 @@ export const Dashboard = () => {
   const trustTier = (user?.trust_tier as TrustTier) ?? 'registered';
   const trustCfg = TRUST_CONFIG[trustTier] ?? TRUST_CONFIG['registered'];
 
-  // API-driven state
-  const [authorStats, setAuthorStats] = useState<Author>({
+  const { data: statsData } = useQuery(authorStatsQuery(username, token ?? ''));
+  const { data: skillsData } = useQuery(dashboardSkillsQuery());
+
+  const authorStats: Author = {
     username,
     github: username,
     email: '',
     trust: trustTier,
     joined: '',
-    totalDownloads: 0,
-    weeklyDownloads: 0,
-    avgRating: 0,
-    totalReviews: 0,
-  });
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [weeklyTrend, setWeeklyTrend] = useState<WeeklyData[]>([]);
-  const [recentActivity, setRecentActivity] = useState<ActivityEvent[]>([]);
-  const [agentBreakdown, setAgentBreakdown] = useState<AgentStat[]>([]);
+    totalDownloads: statsData?.total_downloads ?? 0,
+    weeklyDownloads: statsData?.weekly_downloads ?? 0,
+    avgRating: statsData?.rating_avg ?? 0,
+    totalReviews: statsData?.total_reviews ?? 0,
+  };
 
-  useEffect(() => {
-    if (!username || !token) return;
-    let cancelled = false;
+  const weeklyTrend: WeeklyData[] =
+    statsData?.weekly_trend.map((w) => ({
+      week: w.week,
+      downloads: w.downloads,
+    })) ?? [];
 
-    // Fetch author stats
-    getAuthorStats(username, token)
-      .then((data) => {
-        if (cancelled) return;
-        setAuthorStats((prev) => ({
-          ...prev,
-          username,
-          totalDownloads: data.total_downloads,
-          weeklyDownloads: data.weekly_downloads,
-          avgRating: data.rating_avg,
-          totalReviews: data.total_reviews,
-        }));
-        if (data.weekly_trend.length > 0) {
-          setWeeklyTrend(
-            data.weekly_trend.map((w) => ({
-              week: w.week,
-              downloads: w.downloads,
-            })),
-          );
-        }
-        if (data.agent_breakdown.length > 0) {
-          setAgentBreakdown(
-            data.agent_breakdown.map((a) => ({
-              agent: a.agent,
-              pct: a.percentage,
-              color: AGENT_COLORS[a.agent.toLowerCase()] ?? 'var(--color-text-dim)',
-            })),
-          );
-        }
-        if (data.recent_activity.length > 0) {
-          setRecentActivity(
-            data.recent_activity.map((a) => ({
-              type: a.type as ActivityEvent['type'],
-              skill: a.skill,
-              version: a.version,
-              date: a.date.split('T')[0],
-              detail: a.version ? `Published ${a.version}` : a.type,
-            })),
-          );
-        }
-      })
-      .catch(() => {
-        // On error: leave empty state
-      });
+  const agentBreakdown: AgentStat[] =
+    statsData?.agent_breakdown.map((a) => ({
+      agent: a.agent,
+      pct: a.percentage,
+      color: AGENT_COLORS[a.agent.toLowerCase()] ?? 'var(--color-text-dim)',
+    })) ?? [];
 
-    // Fetch user's skills
-    searchSkills({ q: '', per_page: 50 })
-      .then((data) => {
-        if (cancelled) return;
-        const mySkills = data.results
-          .filter((s) => s.author.username === username)
-          .map((s) => ({
-            name: s.name,
-            version: s.version,
-            categories: s.categories,
-            desc: s.description,
-            downloads: s.downloads,
-            weeklyDownloads: s.weekly_downloads,
-            weeklyGrowth: '',
-            rating: s.rating_avg ?? 0,
-            reviews: s.rating_count ?? 0,
-            trust: s.author.trust_tier as TrustTier,
-            published: s.published_at?.split('T')[0] ?? '',
-            updated: s.updated_at?.split('T')[0] ?? '',
-            status: 'published',
-          }));
-        setSkills(mySkills);
-      })
-      .catch(() => {
-        // On error: leave empty state
-      });
+  const recentActivity: ActivityEvent[] =
+    statsData?.recent_activity.map((a) => ({
+      type: a.type as ActivityEvent['type'],
+      skill: a.skill,
+      version: a.version,
+      date: a.date.split('T')[0],
+      detail: a.version ? `Published ${a.version}` : a.type,
+    })) ?? [];
 
-    return () => {
-      cancelled = true;
-    };
-  }, [username, token]);
+  const skills: Skill[] =
+    skillsData?.results
+      .filter((s) => s.author.username === username)
+      .map((s) => ({
+        name: s.name,
+        version: s.version,
+        categories: s.categories,
+        desc: s.description,
+        downloads: s.downloads,
+        weeklyDownloads: s.weekly_downloads,
+        weeklyGrowth: '',
+        rating: s.rating_avg ?? 0,
+        reviews: s.rating_count ?? 0,
+        trust: s.author.trust_tier as TrustTier,
+        published: s.published_at?.split('T')[0] ?? '',
+        updated: s.updated_at?.split('T')[0] ?? '',
+        status: 'published',
+      })) ?? [];
 
   return (
     <div style={{ maxWidth: 980, margin: '0 auto', padding: '28px 32px 64px' }}>

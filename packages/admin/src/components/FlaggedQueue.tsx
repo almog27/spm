@@ -1,41 +1,36 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@spm/web-auth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Card, StatBox, TrustBadge } from '@spm/ui';
-import {
-  getQueue,
-  approveQueueItem,
-  rejectQueueItem,
-  getAdminStats,
-  type QueueItem,
-} from '../lib/api';
-import { useAdminData } from '../lib/useAdminData';
+import { approveQueueItem, rejectQueueItem, type QueueItem } from '../lib/api';
+import { queueQuery, adminStatsQuery } from './FlaggedQueue.queries';
 import { LoadingState, ErrorState, EmptyState } from './DataState';
 import type { TrustTier } from '@spm/ui';
 
 export const FlaggedQueue = () => {
   const { token } = useAuth();
+  const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const fetchQueue = useCallback((t: string) => getQueue(t), []);
-  const fetchStats = useCallback((t: string) => getAdminStats(t), []);
-
-  const { data: queueData, isLoading, error, refetch } = useAdminData(fetchQueue);
-  const { data: stats } = useAdminData(fetchStats);
+  const { data: queueData, isLoading, error, refetch } = useQuery(queueQuery(token ?? ''));
+  const { data: stats } = useQuery(adminStatsQuery(token ?? ''));
 
   const handleApprove = async (item: QueueItem) => {
     if (!token) return;
     await approveQueueItem(token, item.id, 'Approved via admin panel');
     refetch();
+    queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
   };
 
   const handleReject = async (item: QueueItem) => {
     if (!token) return;
     await rejectQueueItem(token, item.id, 'Rejected via admin panel');
     refetch();
+    queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
   };
 
   if (isLoading) return <LoadingState message="Loading review queue..." />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const queue = queueData?.queue ?? [];
 

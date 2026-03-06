@@ -1,15 +1,14 @@
-import { useCallback } from 'react';
 import { useAuth } from '@spm/web-auth';
+import { useQuery } from '@tanstack/react-query';
 import { Button, Card, PriorityDot, StatBox, StatusBadge, type Priority } from '@spm/ui';
-import { getAdminReports, updateReport } from '../lib/api';
-import { useAdminData } from '../lib/useAdminData';
+import { updateReport } from '../lib/api';
+import { reportsQuery } from './ReportsTab.queries';
 import { LoadingState, ErrorState, EmptyState } from './DataState';
 
 export const ReportsTab = () => {
   const { token } = useAuth();
 
-  const fetchReports = useCallback((t: string) => getAdminReports(t), []);
-  const { data, isLoading, error, refetch } = useAdminData(fetchReports);
+  const { data, isLoading, error, refetch } = useQuery(reportsQuery(token ?? ''));
 
   const handleStatusChange = async (
     id: string,
@@ -23,7 +22,7 @@ export const ReportsTab = () => {
   };
 
   if (isLoading) return <LoadingState message="Loading reports..." />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const reports = data?.results ?? [];
   const openCount = reports.filter((r) => r.status === 'open').length;

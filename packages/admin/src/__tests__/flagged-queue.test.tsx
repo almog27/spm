@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { renderWithQuery } from './helpers';
 import { FlaggedQueue } from '../components/FlaggedQueue';
 
 vi.mock('@spm/web-auth', () => ({
@@ -54,14 +55,14 @@ vi.mock('../lib/api', () => ({
 
 describe('FlaggedQueue', () => {
   it('renders "In queue" stat after loading', async () => {
-    render(<FlaggedQueue />);
+    renderWithQuery(<FlaggedQueue />);
     await waitFor(() => {
       expect(screen.getByText('In queue')).toBeInTheDocument();
     });
   });
 
   it('renders flagged skill names', async () => {
-    render(<FlaggedQueue />);
+    renderWithQuery(<FlaggedQueue />);
     await waitFor(() => {
       expect(screen.getByText('auto-deploy')).toBeInTheDocument();
       expect(screen.getByText('env-manager')).toBeInTheDocument();
@@ -69,7 +70,7 @@ describe('FlaggedQueue', () => {
   });
 
   it('shows flag type and confidence', async () => {
-    render(<FlaggedQueue />);
+    renderWithQuery(<FlaggedQueue />);
     await waitFor(() => {
       expect(screen.getByText('L2: ml_classification (78%)')).toBeInTheDocument();
       expect(screen.getByText('L2: ml_classification (65%)')).toBeInTheDocument();
@@ -77,12 +78,12 @@ describe('FlaggedQueue', () => {
   });
 
   it('shows loading state initially', () => {
-    render(<FlaggedQueue />);
+    renderWithQuery(<FlaggedQueue />);
     expect(screen.getByText('Loading review queue...')).toBeInTheDocument();
   });
 
   it('renders queue depth from stats', async () => {
-    render(<FlaggedQueue />);
+    renderWithQuery(<FlaggedQueue />);
     await waitFor(() => {
       expect(screen.getByText('2')).toBeInTheDocument();
     });

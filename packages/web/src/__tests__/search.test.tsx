@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, waitFor } from '@testing-library/react';
 import { Search } from '../pages/Search';
 import { searchSkills } from '../lib/api';
+import { renderWithProviders } from './helpers';
 
 vi.mock('../lib/api', () => ({
   searchSkills: vi.fn(),
@@ -54,11 +54,7 @@ beforeEach(() => {
 });
 
 const renderSearch = (initialEntries: string[] = ['/search']) =>
-  render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <Search />
-    </MemoryRouter>,
-  );
+  renderWithProviders(<Search />, { routerProps: { initialEntries } });
 
 describe('Search', () => {
   it('renders results count from API', async () => {

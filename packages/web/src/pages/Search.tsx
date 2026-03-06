@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { CATEGORY_NAMES, CATEGORY_SLUGS, TRUST_TIERS, SORT_OPTIONS } from '../data/constants';
 import { TrustBadge, type TrustTier } from '@spm/ui';
-import { searchSkills, type SearchResultItem } from '../lib/api';
+import { type SearchResultItem } from '../lib/api';
+import { searchSkillsQuery } from './search/queries';
 
 interface DisplaySkill {
   name: string;
@@ -148,39 +150,16 @@ export const Search = () => {
   );
   const [trustFilter, setTrustFilter] = useState('All');
   const [sort, setSort] = useState('relevance');
-  const [apiResults, setApiResults] = useState<DisplaySkill[] | null>(null);
-  const [totalResults, setTotalResults] = useState<number | null>(null);
+  const params: Record<string, string | number> = { per_page: 50 };
+  if (queryParam.trim()) params.q = queryParam.trim();
+  if (category !== 'All') params.category = CATEGORY_SLUGS[category] ?? category;
+  if (trustFilter !== 'All') params.trust = trustFilter.toLowerCase();
+  if (sort !== 'relevance') params.sort = sort;
 
-  // Fetch from API when filters change
-  useEffect(() => {
-    let cancelled = false;
+  const { data: searchData } = useQuery(searchSkillsQuery(params));
 
-    const params: Record<string, string | number> = {};
-    if (queryParam.trim()) params.q = queryParam.trim();
-    if (category !== 'All') params.category = CATEGORY_SLUGS[category] ?? category;
-    if (trustFilter !== 'All') params.trust = trustFilter.toLowerCase();
-    if (sort !== 'relevance') params.sort = sort;
-    params.per_page = 50;
-
-    searchSkills(params)
-      .then((data) => {
-        if (cancelled) return;
-        setApiResults(data.results.map(apiResultToDisplay));
-        setTotalResults(data.total);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setApiResults([]);
-        setTotalResults(0);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [queryParam, category, trustFilter, sort]);
-
-  const filtered: DisplaySkill[] = apiResults ?? [];
-  const displayTotal = totalResults ?? filtered.length;
+  const filtered: DisplaySkill[] = searchData?.results.map(apiResultToDisplay) ?? [];
+  const displayTotal = searchData?.total ?? filtered.length;
 
   return (
     <div

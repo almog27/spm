@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { screen } from '@testing-library/react';
 import { Dashboard } from '../pages/dashboard';
 import { useAuth } from '../context/AuthContext';
+import { renderWithProviders } from './helpers';
 
 vi.mock('../context/AuthContext', () => ({
   useAuth: vi.fn(),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('../lib/api', () => ({
@@ -46,12 +47,7 @@ const authState = (overrides: Partial<ReturnType<typeof useAuth>> = {}) => ({
   ...overrides,
 });
 
-const renderDashboard = () =>
-  render(
-    <MemoryRouter>
-      <Dashboard />
-    </MemoryRouter>,
-  );
+const renderDashboard = () => renderWithProviders(<Dashboard />);
 
 beforeEach(() => {
   vi.clearAllMocks();

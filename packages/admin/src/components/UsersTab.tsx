@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@spm/web-auth';
+import { useQuery } from '@tanstack/react-query';
 import {
   Badge,
   Button,
@@ -11,8 +12,8 @@ import {
   TRUST_CONFIG,
   type TrustTier,
 } from '@spm/ui';
-import { getAdminUsers, updateUserRole, updateUserTrust, type AdminUserItem } from '../lib/api';
-import { useAdminData } from '../lib/useAdminData';
+import { updateUserRole, updateUserTrust, type AdminUserItem } from '../lib/api';
+import { usersQuery } from './UsersTab.queries';
 import { useSearchParamsState } from '../lib/useSearchParamsState';
 import { LoadingState, ErrorState } from './DataState';
 
@@ -34,12 +35,7 @@ export const UsersTab = () => {
     newTier: TrustTier;
   } | null>(null);
 
-  const fetchUsers = useCallback(
-    (t: string) =>
-      getAdminUsers(t, { trust: trustFilter !== 'all' ? trustFilter : undefined, per_page: 100 }),
-    [trustFilter],
-  );
-  const { data, isLoading, error, refetch } = useAdminData(fetchUsers, [trustFilter]);
+  const { data, isLoading, error, refetch } = useQuery(usersQuery(token ?? '', trustFilter));
 
   const handleConfirmAction = async () => {
     if (!token || !confirmAction) return;
@@ -64,7 +60,7 @@ export const UsersTab = () => {
   };
 
   if (isLoading) return <LoadingState message="Loading users..." />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const allUsers = data?.results ?? [];
 

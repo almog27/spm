@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getSkill } from '../../lib/api';
-import { type SkillFull, apiToSkillFull } from './types';
+import { useQuery } from '@tanstack/react-query';
+import { skillDetailQuery } from './queries';
+import { apiToSkillFull } from './types';
 import { SkillHero } from './SkillHero';
 import { ReadmeTab } from './ReadmeTab';
 import { VersionsTab } from './VersionsTab';
@@ -11,34 +12,11 @@ import { SkillSidebar } from './SkillSidebar';
 export const SkillDetail = () => {
   const { name } = useParams<{ name: string }>();
   const [activeTab, setActiveTab] = useState<'readme' | 'versions' | 'security'>('readme');
-  const [apiSkill, setApiSkill] = useState<SkillFull | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!name) return;
-    let cancelled = false;
-    setLoading(true);
+  const { data: apiData, isLoading } = useQuery(skillDetailQuery(name ?? ''));
+  const skill = apiData ? apiToSkillFull(apiData) : null;
 
-    getSkill(name)
-      .then((data) => {
-        if (cancelled) return;
-        setApiSkill(apiToSkillFull(data));
-      })
-      .catch(() => {
-        // On error: leave apiSkill null, show "Skill not found"
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [name]);
-
-  const skill = apiSkill;
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div style={{ maxWidth: 1060, margin: '0 auto', padding: '64px 32px', textAlign: 'center' }}>
         <div

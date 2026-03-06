@@ -1,7 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { screen, waitFor } from '@testing-library/react';
+import { Routes, Route } from 'react-router-dom';
 import { SkillDetail } from '../pages/skill-detail';
 import { getSkill, getSkillDownloads } from '../lib/api';
+import { renderWithProviders } from './helpers';
 
 vi.mock('../lib/api', () => ({
   getSkill: vi.fn(),
@@ -47,12 +48,11 @@ const mockPdfSkill = {
 };
 
 const renderSkillDetail = (name: string) =>
-  render(
-    <MemoryRouter initialEntries={[`/skills/${name}`]}>
-      <Routes>
-        <Route path="/skills/:name" element={<SkillDetail />} />
-      </Routes>
-    </MemoryRouter>,
+  renderWithProviders(
+    <Routes>
+      <Route path="/skills/:name" element={<SkillDetail />} />
+    </Routes>,
+    { routerProps: { initialEntries: [`/skills/${name}`] } },
   );
 
 beforeEach(() => {

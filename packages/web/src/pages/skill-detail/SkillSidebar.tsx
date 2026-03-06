@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { TRUST_CONFIG, Sparkline } from '@spm/ui';
-import { getSkillDownloads, type SkillDownloadsDay } from '../../lib/api';
+import { type SkillDownloadsDay } from '../../lib/api';
+import { skillDownloadsQuery } from './queries';
 import { type SkillFull, cardStyle } from './types';
 
 const buildSparklineData = (days: SkillDownloadsDay[]): number[] => {
@@ -19,21 +20,8 @@ const buildSparklineData = (days: SkillDownloadsDay[]): number[] => {
 };
 
 export const SkillSidebar = ({ skill }: { skill: SkillFull }) => {
-  const [sparklineData, setSparklineData] = useState<number[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    getSkillDownloads(skill.name)
-      .then((res) => {
-        if (!cancelled) setSparklineData(buildSparklineData(res.days));
-      })
-      .catch(() => {
-        // Sparkline is non-critical; silently skip on error
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [skill.name]);
+  const { data: downloadsData } = useQuery(skillDownloadsQuery(skill.name));
+  const sparklineData = downloadsData ? buildSparklineData(downloadsData.days) : null;
 
   return (
     <aside style={{ width: 220, flexShrink: 0 }}>

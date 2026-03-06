@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { renderWithQuery } from './helpers';
 import { ReportsTab } from '../components/ReportsTab';
 import { ErrorsTab } from '../components/ErrorsTab';
 
@@ -57,7 +58,7 @@ vi.mock('../lib/api', () => ({
 
 describe('ReportsTab', () => {
   it('renders "Open reports" stat', async () => {
-    render(<ReportsTab />);
+    renderWithQuery(<ReportsTab />);
     await waitFor(() => {
       expect(screen.getByText('Open reports')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
@@ -65,7 +66,7 @@ describe('ReportsTab', () => {
   });
 
   it('renders report skill names', async () => {
-    render(<ReportsTab />);
+    renderWithQuery(<ReportsTab />);
     await waitFor(() => {
       expect(screen.getByText('clipboard-helper')).toBeInTheDocument();
       expect(screen.getByText('git-autocommit')).toBeInTheDocument();
@@ -73,7 +74,7 @@ describe('ReportsTab', () => {
   });
 
   it('shows reporter names', async () => {
-    render(<ReportsTab />);
+    renderWithQuery(<ReportsTab />);
     await waitFor(() => {
       expect(screen.getByText('Reported by @sarah')).toBeInTheDocument();
       expect(screen.getByText('Reported by @chen')).toBeInTheDocument();
@@ -83,7 +84,7 @@ describe('ReportsTab', () => {
 
 describe('ErrorsTab', () => {
   it('renders "Open errors" stat with zero', async () => {
-    render(<ErrorsTab />);
+    renderWithQuery(<ErrorsTab />);
     await waitFor(() => {
       expect(screen.getByText('Open errors')).toBeInTheDocument();
       // Multiple stat boxes show "0" - just verify at least one exists
@@ -92,7 +93,7 @@ describe('ErrorsTab', () => {
   });
 
   it('shows empty state message when no errors', async () => {
-    render(<ErrorsTab />);
+    renderWithQuery(<ErrorsTab />);
     await waitFor(() => {
       expect(screen.getByText(/No errors reported yet/)).toBeInTheDocument();
     });

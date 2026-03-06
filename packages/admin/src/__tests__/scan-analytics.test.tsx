@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { renderWithQuery } from './helpers';
 import { ScanAnalytics } from '../components/ScanAnalytics';
 
 vi.mock('@spm/web-auth', () => ({
@@ -29,7 +30,7 @@ vi.mock('../lib/api', () => ({
 
 describe('ScanAnalytics', () => {
   it('renders "Total publishes" stat', async () => {
-    render(<ScanAnalytics />);
+    renderWithQuery(<ScanAnalytics />);
     await waitFor(() => {
       expect(screen.getByText('Total publishes')).toBeInTheDocument();
       expect(screen.getByText('847')).toBeInTheDocument();
@@ -37,7 +38,7 @@ describe('ScanAnalytics', () => {
   });
 
   it('renders "Published" stat', async () => {
-    render(<ScanAnalytics />);
+    renderWithQuery(<ScanAnalytics />);
     await waitFor(() => {
       const publishedElements = screen.getAllByText('Published');
       expect(publishedElements.length).toBeGreaterThanOrEqual(1);
@@ -46,7 +47,7 @@ describe('ScanAnalytics', () => {
   });
 
   it('renders "Blocked" stat', async () => {
-    render(<ScanAnalytics />);
+    renderWithQuery(<ScanAnalytics />);
     await waitFor(() => {
       const blockedElements = screen.getAllByText('Blocked');
       expect(blockedElements.length).toBeGreaterThanOrEqual(1);
@@ -55,7 +56,7 @@ describe('ScanAnalytics', () => {
   });
 
   it('renders registry totals', async () => {
-    render(<ScanAnalytics />);
+    renderWithQuery(<ScanAnalytics />);
     await waitFor(() => {
       expect(screen.getByText('Registry totals')).toBeInTheDocument();
       expect(screen.getByText('156')).toBeInTheDocument();

@@ -1,7 +1,15 @@
 import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom';
 import { type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '../context/AuthContext';
+
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
 
 interface RenderWithProvidersOptions extends RenderOptions {
   routerProps?: MemoryRouterProps;
@@ -12,10 +20,13 @@ export const renderWithProviders = (
   options?: RenderWithProvidersOptions,
 ): RenderResult => {
   const { routerProps, ...renderOptions } = options ?? {};
+  const queryClient = createTestQueryClient();
   return render(
-    <MemoryRouter {...routerProps}>
-      <AuthProvider>{ui}</AuthProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter {...routerProps}>
+        <AuthProvider>{ui}</AuthProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
     renderOptions,
   );
 };

@@ -1,8 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, waitFor } from '@testing-library/react';
 import { Home } from '../pages/home';
 import { CATEGORIES } from '../data/constants';
 import { getTrending, getCategories } from '../lib/api';
+import { renderWithProviders } from './helpers';
 
 vi.mock('@spm/ui', () => ({
   TrustBadge: ({ tier }: { tier: string; showLabel?: boolean }) => (
@@ -56,12 +56,7 @@ beforeEach(() => {
   });
 });
 
-const renderHome = () =>
-  render(
-    <MemoryRouter>
-      <Home />
-    </MemoryRouter>,
-  );
+const renderHome = () => renderWithProviders(<Home />);
 
 describe('Home', () => {
   it('renders hero heading', () => {
@@ -90,8 +85,8 @@ describe('Home', () => {
     renderHome();
 
     await waitFor(() => {
-      expect(screen.getByText('pdf')).toBeInTheDocument();
-      expect(screen.getByText('frontend-design')).toBeInTheDocument();
+      expect(screen.getAllByText('pdf').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('frontend-design').length).toBeGreaterThan(0);
     });
   });
 

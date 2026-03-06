@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { TrustBadge, type TrustTier } from '@spm/ui';
-import { getAuthorProfile, type AuthorProfileResponse } from '../lib/api';
+import { authorProfileQuery } from './author/queries';
 
 interface AuthorDisplaySkill {
   name: string;
@@ -14,29 +14,8 @@ interface AuthorDisplaySkill {
 
 export const AuthorProfile = () => {
   const { username } = useParams<{ username: string }>();
-  const [loading, setLoading] = useState(true);
-  const [authorData, setAuthorData] = useState<AuthorProfileResponse | null>(null);
 
-  useEffect(() => {
-    if (!username) return;
-    let cancelled = false;
-    setLoading(true);
-
-    getAuthorProfile(username)
-      .then((data) => {
-        if (!cancelled) setAuthorData(data);
-      })
-      .catch(() => {
-        // On error: leave authorData null
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [username]);
+  const { data: authorData, isLoading: loading } = useQuery(authorProfileQuery(username ?? ''));
 
   // Build display data from API
   const authorSkills: AuthorDisplaySkill[] = authorData

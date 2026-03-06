@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@spm/web-auth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, SearchInput, StatusBadge, TRUST_CONFIG, type TrustTier } from '@spm/ui';
-import { getAdminSkills, yankSkill } from '../lib/api';
-import { useAdminData } from '../lib/useAdminData';
+import { yankSkill } from '../lib/api';
+import { adminSkillsQuery } from './SkillModeration.queries';
 import { useSearchParamsState } from '../lib/useSearchParamsState';
 import { LoadingState, ErrorState } from './DataState';
 import { SkillDetailPane } from './SkillDetailPane';
@@ -20,8 +21,8 @@ export const SkillModeration = () => {
   const [yankTarget, setYankTarget] = useState<{ name: string; version: string } | null>(null);
   const [yankReason, setYankReason] = useState('');
 
-  const fetchSkills = useCallback((t: string) => getAdminSkills(t, page, 50), [page]);
-  const { data, isLoading, error, refetch } = useAdminData(fetchSkills, [page]);
+  const queryClient = useQueryClient();
+  const { data, isLoading, error, refetch } = useQuery(adminSkillsQuery(token ?? '', page));
 
   const handleYankConfirm = async () => {
     if (!token || !yankTarget || !yankReason.trim()) return;
@@ -29,6 +30,7 @@ export const SkillModeration = () => {
     setYankTarget(null);
     setYankReason('');
     refetch();
+    queryClient.invalidateQueries({ queryKey: ['admin', 'skillDetail', yankTarget.name] });
   };
 
   // Show inline detail if a skill is selected
@@ -37,7 +39,7 @@ export const SkillModeration = () => {
   }
 
   if (isLoading) return <LoadingState message="Loading skills..." />;
-  if (error) return <ErrorState message={error} onRetry={refetch} />;
+  if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const skills = data?.results ?? [];
 
