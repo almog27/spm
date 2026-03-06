@@ -76,6 +76,7 @@ export const skills = pgTable(
     description: text('description').notNull(),
     repository: text('repository'),
     license: text('license').default('MIT'),
+    status: text('status').notNull().default('published'), // 'published' | 'blocked'
     deprecated: boolean('deprecated').notNull().default(false),
     deprecatedMsg: text('deprecated_msg'),
     ratingAvg: real('rating_avg').default(0),
@@ -87,6 +88,28 @@ export const skills = pgTable(
     index('idx_skills_name').on(table.name),
     index('idx_skills_categories').on(table.categories),
     index('idx_skills_owner').on(table.ownerId),
+  ],
+);
+
+// ── Skill Collaborators (multi-author) ──
+
+export const skillCollaborators = pgTable(
+  'skill_collaborators',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    skillId: uuid('skill_id')
+      .notNull()
+      .references(() => skills.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull().default('collaborator'), // 'owner' | 'collaborator'
+    addedAt: timestamp('added_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('idx_skill_collaborators_unique').on(table.skillId, table.userId),
+    index('idx_skill_collaborators_skill').on(table.skillId),
+    index('idx_skill_collaborators_user').on(table.userId),
   ],
 );
 
