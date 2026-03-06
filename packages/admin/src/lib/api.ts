@@ -254,13 +254,23 @@ export interface SkillDetailVersion {
   downloads: number;
 }
 
+export interface SkillDetailAuthor {
+  username: string;
+  github_login: string;
+  trust_tier: string;
+  role: string;
+}
+
 export interface SkillDetailResponse {
   name: string;
   description: string;
   categories: string[];
   latest_version: string | null;
   author: { username: string; trust_tier: string };
+  authors: SkillDetailAuthor[];
+  status: string;
   deprecated: boolean;
+  scan_status: string | null;
   created_at: string;
   updated_at: string;
   versions: SkillDetailVersion[];
@@ -274,6 +284,7 @@ export interface SkillVersionResponse {
   manifest: Record<string, unknown>;
   published_at: string;
   yanked: boolean;
+  signed: boolean;
 }
 
 export const getSkillDetail = (token: string, name: string): Promise<SkillDetailResponse> =>
@@ -285,6 +296,49 @@ export const getSkillVersion = (
   version: string,
 ): Promise<SkillVersionResponse> =>
   apiFetch(`/skills/${encodeURIComponent(name)}/${encodeURIComponent(version)}`, token);
+
+export const blockSkill = (
+  token: string,
+  name: string,
+  reason: string,
+): Promise<{ name: string; status: string; reason: string; blocked_at: string }> =>
+  apiFetch(`/admin/skills/${encodeURIComponent(name)}/block`, token, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+
+export const unblockSkill = (
+  token: string,
+  name: string,
+): Promise<{ name: string; status: string; unblocked_at: string }> =>
+  apiFetch(`/admin/skills/${encodeURIComponent(name)}/unblock`, token, {
+    method: 'POST',
+  });
+
+export const getAdminSkillVersion = (
+  token: string,
+  name: string,
+  version: string,
+): Promise<SkillVersionResponse> =>
+  apiFetch(
+    `/admin/skills/${encodeURIComponent(name)}/versions/${encodeURIComponent(version)}`,
+    token,
+  );
+
+// -- Skill Downloads (sparkline) --
+
+export interface SkillDownloadsDay {
+  date: string;
+  count: number;
+}
+
+export interface SkillDownloadsResponse {
+  name: string;
+  days: SkillDownloadsDay[];
+}
+
+export const getSkillDownloads = (token: string, name: string): Promise<SkillDownloadsResponse> =>
+  apiFetch(`/skills/${encodeURIComponent(name)}/downloads`, token);
 
 // -- Stats --
 

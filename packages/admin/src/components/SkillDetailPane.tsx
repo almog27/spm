@@ -1,17 +1,38 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@spm/web-auth';
-import { Button, Card, TRUST_CONFIG, type TrustTier } from '@spm/ui';
+import { Button, Card, Sparkline, TRUST_CONFIG, type TrustTier } from '@spm/ui';
 import {
   getSkillDetail,
   getSkillVersion,
+  getAdminSkillVersion,
+  getSkillDownloads,
   yankSkill,
+  blockSkill,
+  unblockSkill,
   type SkillDetailResponse,
   type SkillVersionResponse,
+  type SkillDownloadsDay,
 } from '../lib/api';
 import { useSearchParamsState } from '../lib/useSearchParamsState';
 
 const WEB_URL = import.meta.env.VITE_WEB_URL || 'https://skillpkg.dev';
 const README_COLLAPSED_LINES = 15;
+
+const buildSparklineData = (days: SkillDownloadsDay[]): number[] => {
+  const counts = new Map<string, number>();
+  for (const d of days) counts.set(d.date, d.count);
+
+  const result: number[] = [];
+  const now = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const key = date.toISOString().split('T')[0];
+    result.push(counts.get(key) ?? 0);
+  }
+  return result;
+};
+
+type DetailTab = 'readme' | 'definition' | 'security';
 
 export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
   const { token } = useAuth();
@@ -21,8 +42,14 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [readmeExpanded, setReadmeExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<DetailTab>('readme');
+  const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
+  const [versionLoading, setVersionLoading] = useState(false);
   const [yankTarget, setYankTarget] = useState<string | null>(null);
   const [yankReason, setYankReason] = useState('');
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
+  const [sparklineData, setSparklineData] = useState<number[] | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -41,6 +68,15 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
           if (cancelled) return;
           setVersionData(v);
         }
+
+        // Fetch downloads for sparkline (non-blocking)
+        getSkillDownloads(token, skillName)
+          .then((res) => {
+            if (!cancelled) setSparklineData(buildSparklineData(res.days));
+          })
+          .catch(() => {
+            // Sparkline is non-critical; silently skip on error
+          });
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load skill');
       } finally {
@@ -54,12 +90,58 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
     };
   }, [token, skillName]);
 
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    getSkillDownloads(token, skillName)
+      .then((res) => {
+        if (!cancelled) setSparklineData(buildSparklineData(res.days));
+      })
+      .catch(() => {
+        // Sparkline is non-critical
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token, skillName]);
+
   const handleYank = async () => {
     if (!token || !yankTarget || !yankReason.trim()) return;
     await yankSkill(token, skillName, yankTarget, yankReason.trim());
     setYankTarget(null);
     setYankReason('');
     // Reload detail
+    const d = await getSkillDetail(token, skillName);
+    setDetail(d);
+  };
+
+  const handleVersionChange = async (version: string) => {
+    if (!token) return;
+    setSelectedVersion(version);
+    setVersionLoading(true);
+    try {
+      const v = await getAdminSkillVersion(token, skillName, version);
+      setVersionData(v);
+      setReadmeExpanded(false);
+    } catch {
+      // Keep existing version data on error
+    } finally {
+      setVersionLoading(false);
+    }
+  };
+
+  const handleBlock = async () => {
+    if (!token || !blockReason.trim()) return;
+    await blockSkill(token, skillName, blockReason.trim());
+    setShowBlockConfirm(false);
+    setBlockReason('');
+    const d = await getSkillDetail(token, skillName);
+    setDetail(d);
+  };
+
+  const handleUnblock = async () => {
+    if (!token) return;
+    await unblockSkill(token, skillName);
     const d = await getSkillDetail(token, skillName);
     setDetail(d);
   };
@@ -181,7 +263,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                   </span>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span
                   style={{
                     fontFamily: 'var(--font-sans)',
@@ -190,9 +272,39 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                   }}
                 >
                   by{' '}
-                  <strong style={{ color: 'var(--color-text-primary)' }}>
-                    @{detail.author.username}
-                  </strong>
+                  {(
+                    detail.authors ?? [
+                      {
+                        username: detail.author.username,
+                        github_login: detail.author.username,
+                        trust_tier: detail.author.trust_tier,
+                        role: 'owner',
+                      },
+                    ]
+                  ).map((a, i, arr) => (
+                    <span key={a.username}>
+                      <a
+                        href={`https://github.com/${a.github_login}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: 'var(--color-text-primary)',
+                          textDecoration: 'none',
+                          fontWeight: 600,
+                        }}
+                      >
+                        @{a.username}
+                      </a>
+                      {a.role !== 'owner' && (
+                        <span
+                          style={{ fontSize: 10, color: 'var(--color-text-faint)', marginLeft: 2 }}
+                        >
+                          ({a.role})
+                        </span>
+                      )}
+                      {i < arr.length - 1 && ', '}
+                    </span>
+                  ))}
                 </span>
                 <span
                   style={{
@@ -204,6 +316,21 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                   {detail.downloads.toLocaleString()} downloads
                 </span>
               </div>
+              {sparklineData && (
+                <div style={{ marginTop: 8 }}>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: 10,
+                      color: 'var(--color-text-faint)',
+                      marginBottom: 4,
+                    }}
+                  >
+                    Last 30 days
+                  </div>
+                  <Sparkline data={sparklineData} width={200} height={32} color="#10b981" />
+                </div>
+              )}
               {detail.description && (
                 <p
                   style={{
@@ -221,19 +348,96 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
             </div>
           </Card>
 
-          {/* README */}
-          <div style={{ marginTop: 16 }}>
-            <h3
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 14,
-                fontWeight: 600,
-                color: 'var(--color-text-primary)',
-                marginBottom: 8,
-              }}
-            >
-              README
-            </h3>
+          {/* Version selector */}
+          {detail.versions.length > 0 && (
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <label
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 12,
+                  color: 'var(--color-text-muted)',
+                }}
+              >
+                Version:
+              </label>
+              <select
+                value={selectedVersion ?? detail.latest_version ?? ''}
+                onChange={(e) => handleVersionChange(e.target.value)}
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 12,
+                  padding: '4px 8px',
+                  background: 'var(--color-bg)',
+                  color: 'var(--color-text-primary)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 4,
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                {detail.versions.map((v) => (
+                  <option key={v.version} value={v.version}>
+                    {v.version}
+                    {v.yanked ? ' (yanked)' : ''}
+                  </option>
+                ))}
+              </select>
+              {versionLoading && (
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    color: 'var(--color-text-faint)',
+                  }}
+                >
+                  Loading...
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Sub-tabs */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 0,
+              borderBottom: '1px solid var(--color-border-default)',
+              marginTop: 12,
+              marginBottom: 16,
+            }}
+          >
+            {(
+              [
+                { id: 'readme' as const, label: 'README' },
+                { id: 'definition' as const, label: 'Definition' },
+                { id: 'security' as const, label: 'Security' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  borderBottom:
+                    activeTab === tab.id ? '2px solid #10b981' : '2px solid transparent',
+                  color:
+                    activeTab === tab.id ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                  marginBottom: -1,
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* README tab */}
+          {activeTab === 'readme' && (
             <Card>
               <div style={{ padding: '14px 18px' }}>
                 {versionData?.readme_md ? (
@@ -299,24 +503,13 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                 )}
               </div>
             </Card>
-          </div>
+          )}
 
-          {/* Skill Definition (manifest) */}
-          {manifest && (
-            <div style={{ marginTop: 16 }}>
-              <h3
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: 'var(--color-text-primary)',
-                  marginBottom: 8,
-                }}
-              >
-                Skill Definition
-              </h3>
-              <Card>
-                <div style={{ padding: '14px 18px' }}>
+          {/* Definition tab */}
+          {activeTab === 'definition' && (
+            <Card>
+              <div style={{ padding: '14px 18px' }}>
+                {manifest ? (
                   <pre
                     style={{
                       fontFamily: 'var(--font-mono)',
@@ -330,9 +523,120 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                   >
                     {JSON.stringify(manifest, null, 2)}
                   </pre>
+                ) : (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 12,
+                      color: 'var(--color-text-faint)',
+                    }}
+                  >
+                    No manifest available
+                  </span>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Security tab */}
+          {activeTab === 'security' && (
+            <Card>
+              <div style={{ padding: '14px 18px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {/* Scan status */}
+                  <div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--color-text-primary)',
+                      }}
+                    >
+                      Scan Status
+                    </span>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 12,
+                        color: 'var(--color-text-dim)',
+                      }}
+                    >
+                      {detail.scan_status ?? 'unknown'}
+                    </div>
+                  </div>
+
+                  {/* Scan layers */}
+                  <div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--color-text-primary)',
+                      }}
+                    >
+                      Security Layers
+                    </span>
+                    <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {['Layer 1: Static Analysis', 'Layer 2: LLM Review', 'Layer 3: Sandbox'].map(
+                        (layer, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: 12,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                background: i === 0 ? '#10b981' : 'var(--color-text-faint)',
+                                display: 'inline-block',
+                              }}
+                            />
+                            <span style={{ color: 'var(--color-text-dim)' }}>{layer}</span>
+                            <span style={{ color: 'var(--color-text-faint)', marginLeft: 'auto' }}>
+                              {i === 0 ? 'active' : 'pending'}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Signature info */}
+                  <div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--color-text-primary)',
+                      }}
+                    >
+                      Sigstore Signature
+                    </span>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 12,
+                        color: versionData?.signed ? '#10b981' : 'var(--color-text-faint)',
+                      }}
+                    >
+                      {versionData?.signed ? 'Signed (Fulcio + Rekor)' : 'Not signed'}
+                    </div>
+                  </div>
                 </div>
-              </Card>
-            </div>
+              </div>
+            </Card>
           )}
         </div>
 
@@ -494,7 +798,75 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
               >
                 Open on web →
               </a>
+
+              {/* Block / Unblock */}
+              {detail.status === 'blocked' ? (
+                <Button label="Unblock Skill" color="green" small onClick={handleUnblock} />
+              ) : (
+                <Button
+                  label="Block Skill"
+                  color="red"
+                  small
+                  onClick={() => setShowBlockConfirm(true)}
+                />
+              )}
             </div>
+
+            {/* Block confirmation */}
+            {showBlockConfirm && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: '12px 14px',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  borderRadius: 8,
+                  background: 'rgba(239,68,68,0.05)',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 13,
+                    color: 'var(--color-text-primary)',
+                    marginBottom: 8,
+                  }}
+                >
+                  Block <strong style={{ color: 'var(--color-cyan)' }}>{skillName}</strong>?
+                </div>
+                <textarea
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                  placeholder="Reason (required)..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 12,
+                    padding: '6px 10px',
+                    background: 'var(--color-bg)',
+                    color: 'var(--color-text-primary)',
+                    border: '1px solid var(--color-border-default)',
+                    borderRadius: 6,
+                    outline: 'none',
+                    marginBottom: 8,
+                    boxSizing: 'border-box',
+                    resize: 'vertical',
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <Button label="Block" color="red" small onClick={handleBlock} />
+                  <Button
+                    label="Cancel"
+                    color="text-dim"
+                    small
+                    onClick={() => {
+                      setShowBlockConfirm(false);
+                      setBlockReason('');
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Categories */}
@@ -518,10 +890,10 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                     style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: 11,
-                      color: 'var(--color-text-muted)',
                       padding: '3px 8px',
-                      border: '1px solid var(--color-border-default)',
                       borderRadius: 4,
+                      background: 'var(--color-accent)',
+                      color: 'var(--color-bg)',
                     }}
                   >
                     {cat}
