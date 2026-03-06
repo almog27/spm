@@ -15,12 +15,14 @@ categoriesRoutes.get('/categories', async (c) => {
   const db = c.get('db');
 
   // Count skills per category (unnest the categories array)
-  const rows = await db.execute(
+  const result = await db.execute(
     sql`SELECT unnest(categories) as cat, count(*)::int as count FROM skills GROUP BY cat`,
   );
 
+  // Handle both array and { rows: [...] } formats from different Drizzle drivers
+  const rawRows = Array.isArray(result) ? result : (result as { rows: unknown[] }).rows ?? [];
   const countMap = new Map<string, number>();
-  for (const row of rows as unknown as Array<{ cat: string; count: number }>) {
+  for (const row of rawRows as Array<{ cat: string; count: number }>) {
     countMap.set(row.cat, row.count);
   }
 

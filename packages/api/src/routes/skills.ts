@@ -574,7 +574,12 @@ skillsRoutes.get('/skills/:name', async (c) => {
     .where(eq(skillPlatforms.skillId, skill.id));
 
   const [author] = await db
-    .select({ username: users.username, id: users.id })
+    .select({
+      username: users.username,
+      id: users.id,
+      githubLogin: users.githubLogin,
+      trustTier: users.trustTier,
+    })
     .from(users)
     .where(eq(users.id, skill.ownerId))
     .limit(1);
@@ -588,7 +593,8 @@ skillsRoutes.get('/skills/:name', async (c) => {
     categories: skill.categories,
     author: {
       username: author?.username ?? 'unknown',
-      id: author?.id,
+      github_login: author?.githubLogin ?? '',
+      trust_tier: author?.trustTier ?? 'registered',
     },
     repository: skill.repository,
     license: skill.license,
