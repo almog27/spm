@@ -587,6 +587,38 @@ skillsRoutes.get('/skills/:name', async (c) => {
   const latestVersion = versionRows[0];
   const latestManifest = latestVersion?.manifest as Record<string, unknown> | undefined;
 
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [dlCount] = await db
+    .select({ total: count() })
+    .from(downloads)
+    .innerJoin(versions, eq(versions.id, downloads.versionId))
+    .where(eq(versions.skillId, skill.id));
+
+  const [weeklyDlCount] = await db
+    .select({ total: count() })
+    .from(downloads)
+    .innerJoin(versions, eq(versions.id, downloads.versionId))
+    .where(
+      and(
+        eq(versions.skillId, skill.id),
+        sql`${downloads.downloadedAt} >= ${oneWeekAgo.toISOString()}`,
+      ),
+    );
+
+  // Build security info from latest version
+  const securityInfo = latestVersion
+    ? {
+        signed: latestVersion.sigstoreBundleKey != null,
+        signer_identity: (latestManifest?.security as Record<string, unknown> | undefined)
+          ?.signer_identity as string | undefined,
+        scan_status: ((latestManifest?.security as Record<string, unknown> | undefined)
+          ?.scan_status as string) ?? 'pending',
+        scan_layers: (latestManifest?.security as Record<string, unknown> | undefined)
+          ?.scan_layers as Array<{ layer: number; status: string }> | undefined,
+      }
+    : null;
+
   return c.json({
     name: skill.name,
     description: skill.description,
@@ -602,11 +634,13 @@ skillsRoutes.get('/skills/:name', async (c) => {
     deprecated_msg: skill.deprecatedMsg,
     rating_avg: skill.ratingAvg,
     rating_count: skill.ratingCount,
+    downloads: dlCount.total,
+    weekly_downloads: weeklyDlCount.total,
     tags: tagRows.map((t) => t.tag),
     platforms: platformRows.map((p) => p.platform),
     latest_version: latestVersion?.version ?? null,
     dependencies: latestManifest?.dependencies ?? null,
-    security: latestManifest?.security ?? null,
+    security: securityInfo,
     versions: versionRows.map((v) => ({
       version: v.version,
       published_at: v.publishedAt.toISOString(),

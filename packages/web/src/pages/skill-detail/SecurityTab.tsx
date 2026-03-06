@@ -66,18 +66,30 @@ export const SecurityTab = ({ skill }: { skill: SkillFull }) => (
         &#x1F6E1; Scan Results
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {skill.security.layers?.map((layer, i) => (
+        {skill.security.layers && skill.security.layers.length > 0 ? (
+          skill.security.layers.map((layer, i) => (
+            <div
+              key={i}
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 13,
+                color: 'var(--color-accent)',
+              }}
+            >
+              &#x2713; {layer}
+            </div>
+          ))
+        ) : (
           <div
-            key={i}
             style={{
-              fontFamily: 'var(--font-mono)',
+              fontFamily: 'var(--font-sans)',
               fontSize: 13,
-              color: 'var(--color-accent)',
+              color: 'var(--color-text-dim)',
             }}
           >
-            &#x2713; {layer}
+            No scan data available for this version.
           </div>
-        ))}
+        )}
       </div>
     </div>
   </div>
