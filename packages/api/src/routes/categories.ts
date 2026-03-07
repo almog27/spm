@@ -19,6 +19,13 @@ categoriesRoutes.get('/categories', async (c) => {
     sql`SELECT unnest(categories) as cat, count(*)::int as count FROM skills GROUP BY cat`,
   );
 
+  // Total distinct skills (not summing per-category counts, which double-counts multi-category skills)
+  const totalResult = await db.execute(sql`SELECT count(*)::int as total FROM skills`);
+  const totalRows = Array.isArray(totalResult)
+    ? totalResult
+    : ((totalResult as { rows: unknown[] }).rows ?? []);
+  const totalSkills = (totalRows[0] as { total: number })?.total ?? 0;
+
   // Handle both array and { rows: [...] } formats from different Drizzle drivers
   const rawRows = Array.isArray(result) ? result : ((result as { rows: unknown[] }).rows ?? []);
   const countMap = new Map<string, number>();
@@ -36,7 +43,7 @@ categoriesRoutes.get('/categories', async (c) => {
     };
   });
 
-  return c.json({ categories });
+  return c.json({ categories, total_skills: totalSkills });
 });
 
 // ── POST /categories/classify — heuristic category classification ──

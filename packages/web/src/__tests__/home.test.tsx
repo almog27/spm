@@ -50,6 +50,7 @@ beforeEach(() => {
       { slug: 'documents', display: 'Documents', count: 5, icon: '📄' },
       { slug: 'frontend', display: 'Frontend', count: 3, icon: '🎨' },
     ],
+    total_skills: 7,
   });
 });
 

@@ -173,6 +173,7 @@ export interface CategoryItem {
 
 export interface CategoriesResponse {
   categories: CategoryItem[];
+  total_skills: number;
 }
 
 export const getCategories = (): Promise<CategoriesResponse> => apiFetch('/categories');

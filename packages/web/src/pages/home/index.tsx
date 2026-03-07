@@ -56,7 +56,7 @@ export const Home = () => {
       )
     : null;
 
-  const totalSkills = categories.reduce((sum, c) => sum + c.count, 0);
+  const totalSkills = categoriesData?.total_skills ?? 0;
 
   // Suppress lint warning — trendingTab drives which cached query is displayed, not fetched
   void trendingTab;

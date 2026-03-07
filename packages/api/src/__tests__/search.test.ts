@@ -95,11 +95,14 @@ describe('categories routes — GET /categories', () => {
   it('should return all 10 categories with counts', async () => {
     const { categoriesRoutes: categoriesRoutes } = await import('../routes/categories.js');
 
-    // Mock DB that returns counts for 2 categories (now uses db.execute with unnest)
-    const mockExecute = vi.fn().mockResolvedValueOnce([
-      { cat: 'frontend', count: 5 },
-      { cat: 'backend', count: 3 },
-    ]);
+    // Mock DB: first call returns category counts, second returns total skills
+    const mockExecute = vi
+      .fn()
+      .mockResolvedValueOnce([
+        { cat: 'frontend', count: 5 },
+        { cat: 'backend', count: 3 },
+      ])
+      .mockResolvedValueOnce([{ total: 8 }]);
 
     const db = { execute: mockExecute };
 
@@ -428,8 +431,8 @@ describe('categories routes — edge cases', () => {
   it('should handle DB returning empty category counts', async () => {
     const { categoriesRoutes } = await import('../routes/categories.js');
 
-    // Mock DB that returns empty result (now uses db.execute with unnest)
-    const mockExecute = vi.fn().mockResolvedValueOnce([]);
+    // Mock DB: first call returns empty categories, second returns total 0
+    const mockExecute = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
 
     const db = { execute: mockExecute };
 
