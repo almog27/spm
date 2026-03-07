@@ -69,6 +69,38 @@ export const HeroSearch = ({
           }}
         />
 
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: 12,
+            position: 'relative',
+          }}
+        >
+          <img
+            src="/logo-256.png"
+            alt="SPM"
+            style={{
+              width: 64,
+              height: 64,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: "'Alfa Slab One', serif",
+              fontSize: 42,
+              fontWeight: 400,
+              backgroundImage: 'linear-gradient(135deg, #3dfce4 0%, #2564ff 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              display: 'inline-block',
+            }}
+          >
+            spm
+          </span>
+        </div>
         <h1
           style={{
             fontFamily: 'var(--font-sans)',
@@ -82,17 +114,20 @@ export const HeroSearch = ({
         >
           Find skills for your agents
         </h1>
-        <p
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 14,
-            color: 'var(--color-text-muted)',
-            marginBottom: 20,
-            marginTop: 0,
-          }}
-        >
-          {totalSkills} skills &middot; {totalCategories} categories
-        </p>
+        {(totalSkills > 0 || totalCategories > 0) && (
+          <p
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 14,
+              color: 'var(--color-text-muted)',
+              marginBottom: 20,
+              marginTop: 0,
+            }}
+          >
+            {totalSkills} skill{totalSkills !== 1 ? 's' : ''} &middot; {totalCategories} categor
+            {totalCategories !== 1 ? 'ies' : 'y'}
+          </p>
+        )}
 
         <div style={{ width: '100%', maxWidth: 600, position: 'relative' }}>
           <form onSubmit={handleSubmit}>

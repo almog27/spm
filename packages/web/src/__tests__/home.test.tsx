@@ -1,6 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
 import { Home } from '../pages/home';
-import { CATEGORIES } from '../data/constants';
 import { getTrending, getCategories } from '../lib/api';
 import { renderWithProviders } from './helpers';
 
@@ -47,12 +46,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockedGetTrending.mockResolvedValue({ tab: 'featured', skills: trendingSkills });
   mockedGetCategories.mockResolvedValue({
-    categories: CATEGORIES.map((c) => ({
-      slug: c.slug,
-      display: c.name,
-      count: c.count,
-      icon: c.icon,
-    })),
+    categories: [
+      { slug: 'documents', display: 'Documents', count: 5, icon: '📄' },
+      { slug: 'frontend', display: 'Frontend', count: 3, icon: '🎨' },
+    ],
   });
 });
 
@@ -100,9 +97,8 @@ describe('Home', () => {
     renderHome();
 
     await waitFor(() => {
-      for (const cat of CATEGORIES) {
-        expect(screen.getByText(cat.name)).toBeInTheDocument();
-      }
+      expect(screen.getByText('Documents')).toBeInTheDocument();
+      expect(screen.getByText('Frontend')).toBeInTheDocument();
     });
   });
 });

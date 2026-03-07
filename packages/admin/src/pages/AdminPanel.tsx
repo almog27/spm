@@ -63,29 +63,24 @@ export const AdminPanel = () => {
             href="#"
             style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
           >
-            <div
+            <img
+              src="/logo-64.png"
+              alt="SPM"
               style={{
-                width: 26,
-                height: 26,
-                borderRadius: 5,
-                background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#080a0f',
+                width: 28,
+                height: 28,
               }}
-            >
-              A
-            </div>
+            />
             <span
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: 16,
                 fontWeight: 700,
-                color: '#ef4444',
+                backgroundImage: 'linear-gradient(135deg, #3dfce4 0%, #2564ff 100%)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+                display: 'inline-block',
               }}
             >
               spm

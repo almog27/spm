@@ -46,29 +46,24 @@ export const Nav = ({
           flexShrink: 0,
         }}
       >
-        <div
+        <img
+          src="/logo-64.png"
+          alt="SPM"
           style={{
-            width: 26,
-            height: 26,
-            borderRadius: 5,
-            background: '#0deaff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: "'Alfa Slab One', serif",
-            fontSize: 14,
-            fontWeight: 400,
-            color: 'var(--color-bg)',
+            width: 28,
+            height: 28,
           }}
-        >
-          S
-        </div>
+        />
         <span
           style={{
             fontFamily: "'Alfa Slab One', serif",
             fontSize: 18,
             fontWeight: 400,
-            color: '#0deaff',
+            backgroundImage: 'linear-gradient(135deg, #3dfce4 0%, #2564ff 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+            display: 'inline-block',
           }}
         >
           spm

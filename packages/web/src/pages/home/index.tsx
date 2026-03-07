@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { CATEGORIES, type SkillSummary, type Category } from '../../data/constants';
+import { type SkillSummary, type Category } from '../../data/constants';
 import { type TrendingSkill, type CategoryItem } from '../../lib/api';
 import { trendingQuery, categoriesQuery } from './queries';
 import { HeroSearch } from './HeroSearch';
@@ -44,10 +44,7 @@ export const Home = () => {
   const risingSkills = risingData?.skills.map(trendingToSummary) ?? [];
   const mostInstalledSkills = mostInstalledData?.skills.map(trendingToSummary) ?? [];
   const newSkills = newData?.skills.map(trendingToSummary) ?? [];
-  const categories =
-    categoriesData && categoriesData.categories.length > 0
-      ? categoriesData.categories.map(apiCategoryToCategory)
-      : CATEGORIES;
+  const categories = categoriesData?.categories.map(apiCategoryToCategory) ?? [];
 
   const allSkills = [...featuredSkills, ...risingSkills, ...newSkills];
   const filtered = query.trim()

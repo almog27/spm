@@ -23,18 +23,6 @@ export interface Category {
   count: number;
 }
 
-export const CATEGORIES: Category[] = [
-  { name: 'Documents', slug: 'documents', icon: '📄', count: 34 },
-  { name: 'Data & Visualization', slug: 'data-viz', icon: '📊', count: 28 },
-  { name: 'Frontend', slug: 'frontend', icon: '🎨', count: 22 },
-  { name: 'Backend', slug: 'backend', icon: '🔌', count: 18 },
-  { name: 'Infrastructure', slug: 'infra', icon: '⚙️', count: 19 },
-  { name: 'Testing', slug: 'testing', icon: '🧪', count: 16 },
-  { name: 'Code Quality', slug: 'code-quality', icon: '✨', count: 10 },
-  { name: 'Security', slug: 'security', icon: '🛡', count: 9 },
-  { name: 'Productivity', slug: 'productivity', icon: '⚡', count: 11 },
-];
-
 export const CATEGORY_NAMES = [
   'All',
   'Documents',
