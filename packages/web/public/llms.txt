@@ -1,0 +1,71 @@
+# SPM — Skills Package Manager
+
+> SPM is a package manager for AI agent skills. Think "npm for agent skills."
+> Browse, install, and publish reusable skill packages that extend what AI agents can do.
+
+## What is SPM?
+
+SPM (Skills Package Manager) is a registry and CLI for distributing AI agent skills.
+Skills are packaged capabilities — like PDF manipulation, frontend design, or data visualization —
+that agents can install and use. Each skill is a `.skl` package containing a SKILL.md file
+with instructions, metadata, and optional assets.
+
+## Website
+
+- Homepage: https://skillpkg.dev
+- Search skills: https://skillpkg.dev/search
+- Browse categories: https://skillpkg.dev/categories
+- View a skill: https://skillpkg.dev/skills/{skill-name}
+- Author profiles: https://skillpkg.dev/authors/{username}
+
+## API
+
+The SPM registry API is available at https://registry.skillpkg.dev
+
+Key endpoints:
+- GET /skills — List/search skills (query params: q, category, trust_tier, sort, limit, offset)
+- GET /skills/:name — Get skill details (includes README, versions, security info)
+- GET /categories — List all categories with skill counts
+- GET /trending?tab=featured|rising|most-installed|new — Trending skills
+- GET /authors/:username — Author profile and published skills
+
+## MCP Server
+
+SPM provides an MCP (Model Context Protocol) server for programmatic access from AI agents.
+Install via: npm install -g @spm/mcp
+
+Available tools:
+- spm_search — Search the skill registry
+- spm_info — Get detailed info about a specific skill
+- spm_categories — List available categories
+
+## CLI
+
+Install the CLI: npm install -g spm
+
+Common commands:
+- spm search <query> — Search for skills
+- spm info <name> — View skill details
+- spm install <name> — Install a skill
+- spm publish — Publish a skill to the registry
+
+## Categories
+
+Skills are organized into categories:
+- Documents — PDF, DOCX, text processing
+- Data & Visualization — Charts, dashboards, analytics
+- Frontend — React, UI components, design
+- Backend — APIs, databases, servers
+- Infrastructure — Docker, CI/CD, cloud
+- Testing — Test frameworks, coverage, benchmarks
+- Code Quality — Linting, formatting, refactoring
+- Security — Auth, encryption, vulnerability scanning
+- Productivity — Git, automation, workflow tools
+
+## Trust Tiers
+
+Skills are assigned trust tiers indicating verification level:
+- Official — Published by known organizations (Anthropic, Vercel)
+- Verified — Author identity verified via GitHub
+- Scanned — Passed automated security scanning
+- Registered — Published by a registered user

@@ -1,0 +1,14 @@
+# SPM — Skills Package Manager
+# https://skillpkg.dev
+
+User-agent: *
+Allow: /
+Allow: /skills/*
+Allow: /search
+Allow: /authors/*
+Allow: /categories
+
+Disallow: /admin/*
+Disallow: /dashboard/*
+
+Sitemap: https://skillpkg.dev/sitemap.xml
