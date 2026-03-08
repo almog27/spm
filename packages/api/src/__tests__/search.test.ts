@@ -432,7 +432,10 @@ describe('categories routes — edge cases', () => {
     const { categoriesRoutes } = await import('../routes/categories.js');
 
     // Mock DB: first call returns empty categories, second returns total 0
-    const mockExecute = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([{ total: 0 }]);
+    const mockExecute = vi
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ total: 0 }]);
 
     const db = { execute: mockExecute };
 
