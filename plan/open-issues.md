@@ -105,73 +105,43 @@ Import existing skills from Vercel, Anthropic, and community sources to bootstra
 
 ---
 
-## 8. Admin Block/Unblock Skills
+## ~~8. Admin Block/Unblock Skills~~ DONE
 
-**Priority:** Medium
-
-DB `status` column exists but endpoints and UI are missing.
-
-### TODO:
-
-- `POST /admin/skills/:name/block` endpoint
-- `POST /admin/skills/:name/unblock` endpoint
-- Admin UI buttons with confirmation modals
-- Audit log for block/unblock actions
+Endpoints (`POST /admin/skills/:name/block` and `/unblock`) and admin UI with confirmation all implemented.
 
 ---
 
-## 9. Admin User Role Management
+## ~~9. Admin User Role Management~~ DONE
 
-**Priority:** Medium
-
-JWT includes `role` claim and `adminGuard` middleware works. Missing management endpoints.
-
-### TODO:
-
-- `PATCH /admin/users/:username/role` endpoint
-- Admin UI for promoting/revoking admin access
-- Audit log for role changes
+`PATCH /admin/users/:username/role` endpoint and UsersTab UI with promote/revoke flow implemented.
 
 ---
 
-## 10. Multi-Author Support
+## ~~10. Multi-Author Display~~ DONE
 
-**Priority:** Medium
+DB schema, API response (`authors[]` on `GET /skills/:name`), web sidebar, and admin detail pane all implemented.
 
-DB migration (004) and `skillCollaborators` Drizzle schema exist. API/UI not wired up.
+### Remaining (future): Collaborator Management
 
-### TODO:
-
-- `GET /skills/:name` response includes `authors[]` field
-- Web UI shows multiple authors with roles on skill detail page
-- Admin UI shows author list with roles
-
----
-
-## 11. Downloads Sparkline API & UI
-
-**Priority:** Medium
-
-### TODO:
-
-- `GET /skills/:name/downloads` endpoint (30-day daily buckets)
-- `Sparkline` component in `packages/ui/`
-- Web skill detail sidebar integration
-- Admin detail pane integration
+- `POST/DELETE /skills/:name/collaborators` API endpoints
+- Dashboard UI for managing collaborators
+- CLI: `spm collaborators add/remove/list`
+- `/authors/:username` should include collaborated skills, not just owned
 
 ---
 
-## 12. Security Enhancements
+## ~~11. Downloads Sparkline API & UI~~ DONE
 
-**Priority:** Medium
+API endpoint, `Sparkline` component in `@spm/ui`, web sidebar and admin detail pane all implemented.
 
-### TODO:
+---
 
-- `SecurityBadge` shared component (green/yellow/red/gray shields)
-- `spm publish --no-security` flag (skip Layer 2/3, Layer 1 always runs)
-- `spm search --security=full|partial|any` filter
-- Web search sidebar: security level filter
-- Version-specific admin endpoint: `GET /admin/skills/:name/versions/:version`
+## ~~12. Security Enhancements~~ DONE
+
+`SecurityBadge` component in `@spm/ui`, `GET /admin/skills/:name/versions/:version` endpoint implemented.
+
+All published skills are fully scanned (Layer 1/2/3). No opt-out — simpler and safer.
+Dropped `--no-security` flag and security filter (no partial scans = nothing to filter).
 
 ---
 
