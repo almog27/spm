@@ -231,6 +231,9 @@ skillsRoutes.post('/skills', authed, async (c) => {
       })
       .where(eq(skills.id, skillId));
   } else {
+    // Admin users can set imported_from via header
+    const importedFrom = jwt.role === 'admin' ? (c.req.header('X-Imported-From') ?? null) : null;
+
     const [newSkill] = await db
       .insert(skills)
       .values({
@@ -240,6 +243,7 @@ skillsRoutes.post('/skills', authed, async (c) => {
         description,
         repository: manifest.urls?.repository,
         license: manifest.license,
+        importedFrom,
       })
       .returning({ id: skills.id });
     skillId = newSkill.id;

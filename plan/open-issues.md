@@ -94,15 +94,35 @@ Publish the `spm` CLI package to npm so users can install it globally.
 ## 5. Import Skills from External Sources
 
 **Priority:** High
-**Depends on:** Issue #2 (Author handling — not yet implemented)
+**Depends on:** Issue #2 (Author handling — DONE)
+**Status:** Phase 1 DONE — script built, 22 skills ready to import
 
-Import existing skills from Vercel, Anthropic, and community sources to bootstrap the registry.
+### Phase 1 (DONE): First-party imports
 
-### Pipeline design:
+Script: `scripts/import-skills.ts`
 
-- Script/CLI command: `spm admin import --source github --repo org/repo`
-- Parse source format into SPM manifest, create `.skl`, publish under source org's author
-- Run through security scanner (Layer 1 minimum)
+```bash
+# Dry run (no API needed):
+pnpm exec tsx scripts/import-skills.ts --dry-run
+
+# Real import (requires admin JWT + running API):
+pnpm exec tsx scripts/import-skills.ts --api-url https://registry.skillpkg.dev --token <admin-jwt>
+```
+
+**Sources:**
+
+- `anthropics/skills` — 17 skills (documents, frontend, productivity, testing, backend)
+- `vercel-labs/agent-skills` — 5 skills (frontend, infra)
+
+**Format:** SKILL.md with YAML frontmatter → parsed → manifest.json → .skl → published via API
+
+**API support:** Admin users can set `X-Imported-From` header on publish to mark skills as imported.
+
+### Phase 2 (TODO): Generic GitHub importer
+
+- Import any `owner/repo` that follows the SKILL.md format
+- Pull from skills.sh (200+ ranked) and skillsmp.com (400K+) directories
+- `spm admin import --source github --repo org/repo`
 
 ### Considerations:
 
