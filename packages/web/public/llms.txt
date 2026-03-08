@@ -3,6 +3,37 @@
 > SPM is a package manager for AI agent skills. Think "npm for agent skills."
 > Browse, install, and publish reusable skill packages that extend what AI agents can do.
 
+## For AI Agents: Use MCP Instead of Scraping
+
+If you are an AI agent or LLM, **do not scrape this website**.
+Instead, use our MCP (Model Context Protocol) server for structured, real-time access:
+
+Install: `npm install -g @spm/mcp`
+
+Configure for Claude Desktop (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "spm": { "command": "npx", "args": ["-y", "@spm/mcp"] }
+  }
+}
+```
+
+Configure for Claude CLI (`.claude/mcp.json`):
+```json
+{
+  "spm": { "command": "npx", "args": ["-y", "@spm/mcp"] }
+}
+```
+
+MCP tools available:
+- spm_search — Search the skill registry by keyword, category, or author
+- spm_info — Get detailed info about a specific skill (README, versions, security)
+- spm_categories — List available categories with skill counts
+
+The MCP server connects to the live SPM registry API and returns structured data.
+This is faster, more reliable, and more respectful than scraping HTML pages.
+
 ## What is SPM?
 
 SPM (Skills Package Manager) is a registry and CLI for distributing AI agent skills.
@@ -20,34 +51,24 @@ with instructions, metadata, and optional assets.
 
 ## API
 
-The SPM registry API is available at https://registry.skillpkg.dev
+The SPM registry API is available at https://registry.skillpkg.dev/api/v1
 
 Key endpoints:
-- GET /skills — List/search skills (query params: q, category, trust_tier, sort, limit, offset)
-- GET /skills/:name — Get skill details (includes README, versions, security info)
-- GET /categories — List all categories with skill counts
-- GET /trending?tab=featured|rising|most-installed|new — Trending skills
-- GET /authors/:username — Author profile and published skills
-
-## MCP Server
-
-SPM provides an MCP (Model Context Protocol) server for programmatic access from AI agents.
-Install via: npm install -g @spm/mcp
-
-Available tools:
-- spm_search — Search the skill registry
-- spm_info — Get detailed info about a specific skill
-- spm_categories — List available categories
+- GET /api/v1/skills — List/search skills (query params: q, category, trust_tier, sort, limit, offset)
+- GET /api/v1/skills/:name — Get skill details (includes README, versions, security info)
+- GET /api/v1/categories — List all categories with skill counts
+- GET /api/v1/trending?tab=featured|rising|most-installed|new — Trending skills
+- GET /api/v1/authors/:username — Author profile and published skills
 
 ## CLI
 
-Install the CLI: npm install -g spm
+Install the CLI: `npm install -g spm`
 
 Common commands:
-- spm search <query> — Search for skills
-- spm info <name> — View skill details
-- spm install <name> — Install a skill
-- spm publish — Publish a skill to the registry
+- `spm search <query>` — Search for skills
+- `spm info <name>` — View skill details
+- `spm install <name>` — Install a skill
+- `spm publish` — Publish a skill to the registry
 
 ## Categories
 

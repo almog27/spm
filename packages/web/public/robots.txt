@@ -7,8 +7,33 @@ Allow: /skills/*
 Allow: /search
 Allow: /authors/*
 Allow: /categories
-
 Disallow: /dashboard/*
 Disallow: /signin
+
+# AI crawlers — prefer using our MCP server or API for structured access
+# See /llms.txt for details, or install: npm install -g @spm/mcp
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
 
 Sitemap: https://skillpkg.dev/sitemap.xml
