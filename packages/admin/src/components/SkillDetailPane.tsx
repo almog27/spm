@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@spm/web-auth';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Sparkline, TRUST_CONFIG, type TrustTier } from '@spm/ui';
+import { Badge, Button, Card, Sparkline, TRUST_CONFIG, type TrustTier } from '@spm/ui';
 import {
   getAdminSkillVersion,
   yankSkill,
@@ -271,6 +271,16 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                   >
                     DEPRECATED
                   </span>
+                )}
+                {detail.imported_from && (
+                  <a
+                    href={detail.imported_from}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Badge label="Imported" color="#818cf8" />
+                  </a>
                 )}
               </div>
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>

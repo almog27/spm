@@ -295,6 +295,7 @@ export interface SkillDetailResponse {
   latest_version: string | null;
   author: { username: string; trust_tier: string };
   authors: SkillDetailAuthor[];
+  imported_from?: string;
   status: string;
   deprecated: boolean;
   scan_status: string | null;

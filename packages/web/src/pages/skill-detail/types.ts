@@ -40,6 +40,7 @@ export interface SkillFull {
     layers: Array<{ layer: number; name: string; status: string; confidence: number | null }>;
   };
   repo: string;
+  importedFrom?: string;
 }
 
 const formatDownloads = (n: number): string => {
@@ -102,6 +103,7 @@ export const apiToSkillFull = (data: SkillDetailResponse): SkillFull => ({
       })) ?? [],
   },
   repo: data.repository ?? '',
+  importedFrom: data.imported_from,
 });
 
 export const cardStyle: React.CSSProperties = {

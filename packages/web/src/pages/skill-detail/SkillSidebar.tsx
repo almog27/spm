@@ -161,6 +161,50 @@ export const SkillSidebar = ({ skill }: { skill: SkillFull }) => {
           })}
         </div>
 
+        {/* Imported from */}
+        {skill.importedFrom && (
+          <div style={cardStyle}>
+            <div
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: 11,
+                color: 'var(--color-text-muted)',
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Imported from
+            </div>
+            <a
+              href={skill.importedFrom}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 12,
+                color: '#818cf8',
+                textDecoration: 'none',
+                wordBreak: 'break-all',
+              }}
+            >
+              {skill.importedFrom.replace(/^https?:\/\/(www\.)?/, '')}
+            </a>
+            <div
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: 11,
+                color: 'var(--color-text-faint)',
+                marginTop: 6,
+                lineHeight: 1.4,
+              }}
+            >
+              This skill was imported by SPM from an external source. The original author did not
+              publish it directly.
+            </div>
+          </div>
+        )}
+
         {/* Links */}
         <div style={cardStyle}>
           <div

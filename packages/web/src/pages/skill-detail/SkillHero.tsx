@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CopyButton, TrustBadge } from '@spm/ui';
+import { Badge, CopyButton, TrustBadge } from '@spm/ui';
 import { type SkillFull } from './types';
 
 export const SkillHero = ({ skill }: { skill: SkillFull }) => (
@@ -38,6 +38,16 @@ export const SkillHero = ({ skill }: { skill: SkillFull }) => (
           v{skill.version}
         </span>
         <TrustBadge tier={skill.trust} size="lg" />
+        {skill.importedFrom && (
+          <a
+            href={skill.importedFrom}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            <Badge label="Imported" color="#818cf8" />
+          </a>
+        )}
       </div>
       <div style={{ fontSize: 13, color: 'var(--color-text-primary)', marginBottom: 8 }}>
         <span style={{ color: 'var(--color-text-faint)' }}>by </span>

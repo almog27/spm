@@ -106,6 +106,7 @@ export interface SkillDetailResponse {
   platforms?: string[];
   license?: string;
   repository?: string;
+  imported_from?: string;
   deprecated: boolean;
   readme_md: string | null;
   latest_version: string;
