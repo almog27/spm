@@ -6,6 +6,7 @@ import { compareTwoStrings } from 'string-similarity';
 import { ManifestSchema, ERROR_CODES, createApiError, TRUST_TIERS } from '@spm/shared';
 import type { Manifest } from '@spm/shared';
 import type { AppEnv } from '../types.js';
+import type { Database } from '../db/index.js';
 import { authed } from '../middleware/auth.js';
 import {
   skills,
@@ -43,12 +44,33 @@ const computeSha256 = async (data: ArrayBuffer): Promise<string> => {
   return [...new Uint8Array(hashBuffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
 };
 
+/**
+ * Check if the authed user is a placeholder (import-only) account.
+ * Placeholder users cannot publish, yank, or update skills.
+ */
+const isPlaceholderUser = async (db: Database, userId: string): Promise<boolean> => {
+  const [user] = await db
+    .select({ isPlaceholder: users.isPlaceholder })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return user?.isPlaceholder ?? false;
+};
+
 // ── POST /skills — publish a skill version ──
 
 skillsRoutes.post('/skills', authed, async (c) => {
   const db = c.get('db');
   const jwt = c.get('jwtPayload');
   const userId = jwt.sub;
+
+  // Placeholder users (created by import script) cannot publish
+  if (await isPlaceholderUser(db, userId)) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'Placeholder accounts cannot publish skills' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
 
   const formData = await c.req.formData();
 
@@ -716,6 +738,7 @@ skillsRoutes.get('/skills/:name', async (c) => {
               role: 'owner',
             },
           ],
+    imported_from: skill.importedFrom ?? undefined,
     repository: skill.repository,
     license: skill.license,
     deprecated: skill.deprecated,
@@ -839,6 +862,14 @@ skillsRoutes.delete(
     const name = c.req.param('name');
     const version = c.req.param('version');
 
+    // Placeholder users cannot yank
+    if (await isPlaceholderUser(db, userId)) {
+      return c.json(
+        createApiError('FORBIDDEN', { message: 'Placeholder accounts cannot modify skills' }),
+        ERROR_CODES.FORBIDDEN.status,
+      );
+    }
+
     const [skill] = await db.select().from(skills).where(eq(skills.name, name)).limit(1);
 
     if (!skill) {
@@ -895,6 +926,14 @@ skillsRoutes.patch('/skills/:name', authed, zValidator('json', UpdateSkillSchema
   const jwt = c.get('jwtPayload');
   const userId = jwt.sub;
   const name = c.req.param('name');
+
+  // Placeholder users cannot update metadata
+  if (await isPlaceholderUser(db, userId)) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'Placeholder accounts cannot modify skills' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
 
   const [skill] = await db.select().from(skills).where(eq(skills.name, name)).limit(1);
 

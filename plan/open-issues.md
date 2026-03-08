@@ -20,9 +20,39 @@ Logo added to web nav, admin nav, hero section, favicons, CLI banner, and repo a
 
 ---
 
-## ~~2. Imported / Community Skills — Author Handling~~ DONE
+## 2. Imported / Community Skills — Author Handling
 
-Decision documented: Placeholder users approach. One user per org, `is_placeholder` + `imported_from` columns.
+**Priority:** High
+**Status:** Decision documented, **NOT yet implemented in code**
+
+### Schema changes needed:
+
+- `users` table: add `is_placeholder boolean NOT NULL DEFAULT false`
+- `skills` table: add `imported_from text` (nullable) — source URL for imported skills
+
+### Migration:
+
+```sql
+ALTER TABLE users ADD COLUMN is_placeholder boolean NOT NULL DEFAULT false;
+ALTER TABLE skills ADD COLUMN imported_from text;
+```
+
+### Trust & Attribution (Decision: Option A+B)
+
+Two-layer approach — trust tiers + transparent provenance:
+
+- **Trust tier**: imported skills from known orgs (anthropic, vercel) get `verified` — the code is genuinely theirs
+- **Provenance**: `imported_from` URL is always shown in UI ("Imported from github.com/anthropics/...")
+- **Distinction**: "Verified" + "Imported" tag makes it clear: trustworthy code, but we imported it — the org didn't publish it themselves
+- **Claim flow**: if the real org joins SPM, they claim the placeholder account → "Imported" tag disappears, becomes a normal `verified` publisher
+
+### Logic to implement:
+
+- Import script: create placeholder user per org (idempotent), publish under that user
+- Trust tier: `verified` for known orgs (anthropic, vercel), `scanned` for unknown community sources
+- UI: show "Imported from [source]" badge alongside trust tier badge when `imported_from` is set
+- Read-only constraints: placeholder-owned skills cannot be yanked/updated via API
+- Claim flow (future): real user proves org ownership → placeholder merged into their account
 
 ---
 
@@ -64,7 +94,7 @@ Publish the `spm` CLI package to npm so users can install it globally.
 ## 5. Import Skills from External Sources
 
 **Priority:** High
-**Depends on:** Issue #2 (Author handling — DONE)
+**Depends on:** Issue #2 (Author handling — not yet implemented)
 
 Import existing skills from Vercel, Anthropic, and community sources to bootstrap the registry.
 
