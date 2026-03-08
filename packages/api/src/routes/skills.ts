@@ -146,9 +146,7 @@ skillsRoutes.post('/skills', authed, async (c) => {
     textFiles = [{ name: 'manifest:description', content: description }];
   }
 
-  const skipAdvanced = c.req.header('X-Skip-Security') === 'true';
   const scanResult = await runSecurityPipeline(textFiles, {
-    skipAdvanced,
     hfApiToken: c.env.HF_API_TOKEN,
     lakeraApiKey: c.env.LAKERA_API_KEY,
   });

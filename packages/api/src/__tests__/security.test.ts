@@ -308,23 +308,10 @@ describe('Security pipeline', () => {
     expect(result.layers).toHaveLength(1);
   });
 
-  it('should skip L2/L3 when skipAdvanced is true', async () => {
-    const result = await runSecurityPipeline(
-      [{ name: 'SKILL.md', content: '# Safe content\n\nA useful skill.' }],
-      { skipAdvanced: true },
-    );
-    expect(result.passed).toBe(true);
-    expect(result.securityLevel).toBe('partial');
-    expect(result.layers).toHaveLength(3);
-    expect(result.layers[0].status).toBe('passed');
-    expect(result.layers[1].status).toBe('skipped');
-    expect(result.layers[2].status).toBe('skipped');
-  });
-
   it('should skip L2/L3 when no API tokens provided', async () => {
     const result = await runSecurityPipeline(
       [{ name: 'SKILL.md', content: '# Safe content\n\nA useful skill.' }],
-      { skipAdvanced: false },
+      {},
     );
     expect(result.passed).toBe(true);
     // No tokens = skipped layers = partial
@@ -340,9 +327,7 @@ describe('Security pipeline', () => {
   });
 
   it('should include layer numbers in results', async () => {
-    const result = await runSecurityPipeline([{ name: 'SKILL.md', content: '# Safe' }], {
-      skipAdvanced: true,
-    });
+    const result = await runSecurityPipeline([{ name: 'SKILL.md', content: '# Safe' }], {});
     expect(result.layers[0].layer).toBe(1);
     expect(result.layers[1].layer).toBe(2);
     expect(result.layers[2].layer).toBe(3);

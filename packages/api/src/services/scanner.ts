@@ -35,7 +35,6 @@ export interface PipelineResult {
 }
 
 export interface PipelineOptions {
-  skipAdvanced?: boolean;
   hfApiToken?: string;
   lakeraApiKey?: string;
 }
@@ -56,7 +55,7 @@ export const runSecurityPipeline = async (
   files: Array<{ name: string; content: string }>,
   options: PipelineOptions = {},
 ): Promise<PipelineResult> => {
-  const { skipAdvanced = false, hfApiToken, lakeraApiKey } = options;
+  const { hfApiToken, lakeraApiKey } = options;
   const allFindings: PipelineFinding[] = [];
   const layerResults: LayerResult[] = [];
 
@@ -94,38 +93,7 @@ export const runSecurityPipeline = async (
     };
   }
 
-  // L2 and L3: skip if requested or if tokens are not available
-  if (skipAdvanced) {
-    layerResults.push({
-      layer: 2,
-      name: 'ML Classification',
-      status: 'skipped',
-      confidence: null,
-      blocked: 0,
-      warnings: 0,
-      passed: true,
-    });
-    layerResults.push({
-      layer: 3,
-      name: 'Lakera Guard',
-      status: 'skipped',
-      confidence: null,
-      blocked: 0,
-      warnings: 0,
-      passed: true,
-    });
-
-    return {
-      passed: true,
-      blocked: 0,
-      warnings: l1Warnings,
-      findings: allFindings,
-      layers: layerResults,
-      securityLevel: 'partial',
-    };
-  }
-
-  // Run L2 and L3 in parallel, with graceful degradation
+  // Run L2 and L3 in parallel, with graceful degradation (skip if tokens not configured)
   const l2Promise = hfApiToken
     ? scanWithDeBERTa(files, hfApiToken).catch((err: unknown) => {
         console.warn('Layer 2 (DeBERTa) failed, degrading gracefully:', err);
