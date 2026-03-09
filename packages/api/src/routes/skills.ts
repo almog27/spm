@@ -315,16 +315,18 @@ skillsRoutes.post('/skills', authed, async (c) => {
     .returning({ id: versions.id });
 
   // Write scan results to scans table
+  const publishDbStatusMap: Record<string, 'pending' | 'passed' | 'flagged' | 'blocked'> = {
+    passed: 'passed',
+    flagged: 'flagged',
+    blocked: 'blocked',
+    error: 'pending',
+    skipped: 'pending',
+  };
   for (const layerResult of scanResult.layers) {
     await db.insert(scans).values({
       versionId: insertedVersion.id,
       layer: layerResult.layer,
-      status:
-        layerResult.status === 'passed'
-          ? 'passed'
-          : layerResult.status === 'blocked'
-            ? 'blocked'
-            : 'flagged',
+      status: publishDbStatusMap[layerResult.status] ?? 'pending',
       confidence: layerResult.confidence,
       details: {
         name: layerResult.name,

@@ -340,16 +340,17 @@ skillsRoutes.post('/admin/skills/:name/rescan', zValidator('json', RescanSchema)
     lakeraApiKey: c.env.LAKERA_API_KEY,
   });
 
-  // Upsert scan records per layer (skip layers that didn't run)
-  const dbStatusMap: Record<string, 'passed' | 'flagged' | 'blocked'> = {
+  // Upsert scan records per layer
+  const dbStatusMap: Record<string, 'pending' | 'passed' | 'flagged' | 'blocked'> = {
     passed: 'passed',
     flagged: 'flagged',
     blocked: 'blocked',
+    error: 'pending', // DB enum has no 'error'; store as 'pending', actual status in details
+    skipped: 'pending',
   };
 
   for (const layer of scanResult.layers) {
-    const dbStatus = dbStatusMap[layer.status];
-    if (!dbStatus) continue;
+    const dbStatus = dbStatusMap[layer.status] ?? 'pending';
 
     await db
       .insert(scans)
@@ -358,14 +359,24 @@ skillsRoutes.post('/admin/skills/:name/rescan', zValidator('json', RescanSchema)
         layer: layer.layer,
         status: dbStatus,
         confidence: layer.confidence,
-        details: { name: layer.name, blocked: layer.blocked, warnings: layer.warnings },
+        details: {
+          name: layer.name,
+          status: layer.status,
+          blocked: layer.blocked,
+          warnings: layer.warnings,
+        },
       })
       .onConflictDoUpdate({
         target: [scans.versionId, scans.layer],
         set: {
           status: dbStatus,
           confidence: layer.confidence,
-          details: { name: layer.name, blocked: layer.blocked, warnings: layer.warnings },
+          details: {
+            name: layer.name,
+            status: layer.status,
+            blocked: layer.blocked,
+            warnings: layer.warnings,
+          },
           scannedAt: new Date(),
         },
       });

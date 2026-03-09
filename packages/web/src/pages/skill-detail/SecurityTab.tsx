@@ -10,6 +10,10 @@ const layerStatusIcon = (status: string) => {
       return { symbol: '\u26A0', color: '#eab308' };
     case 'blocked':
       return { symbol: '\u2717', color: '#ef4444' };
+    case 'error':
+      return { symbol: '\u26A0', color: '#f97316' };
+    case 'pending':
+      return { symbol: '\u2022', color: 'var(--color-text-muted)' };
     default:
       return { symbol: '\u2014', color: 'var(--color-text-faint)' };
   }
@@ -26,6 +30,10 @@ const layerStatusLabel = (status: string, confidence: number | null) => {
         : 'flagged';
     case 'blocked':
       return 'blocked';
+    case 'error':
+      return 'error';
+    case 'pending':
+      return 'pending';
     default:
       return 'skipped';
   }

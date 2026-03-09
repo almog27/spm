@@ -29,6 +29,10 @@ const layerStatusColor = (status: string): string => {
       return '#f59e0b';
     case 'blocked':
       return '#ef4444';
+    case 'error':
+      return '#f97316';
+    case 'pending':
+      return 'var(--color-text-muted)';
     case 'skipped':
     default:
       return 'var(--color-text-faint)';
