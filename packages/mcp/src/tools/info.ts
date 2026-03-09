@@ -9,33 +9,34 @@ export const infoInputSchema = {
 
 export const formatSkillInfo = (skill: {
   name: string;
-  version: string;
   description: string;
-  author: string;
-  verified?: boolean;
+  author: { username: string; trust_tier: string };
   categories: string[];
   license?: string;
   downloads: number;
-  downloads_this_week?: number;
-  rating: number;
-  review_count: number;
-  keywords?: string[];
+  weekly_downloads?: number;
+  rating_avg: number;
+  rating_count: number;
+  tags?: string[];
   platforms?: string[];
+  imported_from?: string | null;
+  latest_version?: { version: string } | null;
 }): string => {
-  const header = `${skill.name} v${skill.version}`;
+  const version = skill.latest_version?.version ?? 'unknown';
+  const header = `${skill.name} v${version}`;
   const separator = '═'.repeat(Math.max(header.length, 23));
   const categoryDisplays = skill.categories.map((cat) => {
     const info = CATEGORY_INFO[cat as SkillCategory];
     return info ? info.display : cat;
   });
-  const verifiedMark = skill.verified ? ' (verified ✓)' : '';
+  const verifiedMark = skill.author.trust_tier === 'verified' ? ' (verified ✓)' : '';
 
   const lines: string[] = [
     header,
     separator,
     skill.description,
     '',
-    `Author: ${skill.author}${verifiedMark}`,
+    `Author: ${skill.author.username}${verifiedMark}`,
     `Categories: ${categoryDisplays.join(', ')}`,
   ];
 
@@ -44,19 +45,24 @@ export const formatSkillInfo = (skill: {
   }
 
   const weeklyDl =
-    skill.downloads_this_week != null
-      ? ` (${skill.downloads_this_week.toLocaleString()} this week)`
+    skill.weekly_downloads != null
+      ? ` (${skill.weekly_downloads.toLocaleString()} this week)`
       : '';
   lines.push(`Downloads: ${skill.downloads.toLocaleString()}${weeklyDl}`);
-  lines.push(`Rating: ⭐ ${skill.rating.toFixed(1)} (${skill.review_count} reviews)`);
+  lines.push(`Rating: ⭐ ${skill.rating_avg.toFixed(1)} (${skill.rating_count} reviews)`);
 
-  if (skill.keywords && skill.keywords.length > 0) {
+  if (skill.tags && skill.tags.length > 0) {
     lines.push('');
-    lines.push(`Tags: ${skill.keywords.join(', ')}`);
+    lines.push(`Tags: ${skill.tags.join(', ')}`);
   }
 
   if (skill.platforms && skill.platforms.length > 0) {
     lines.push(`Platforms: ${skill.platforms.join(', ')}`);
+  }
+
+  if (skill.imported_from) {
+    lines.push('');
+    lines.push(`Imported from: ${skill.imported_from}`);
   }
 
   lines.push('');

@@ -1,7 +1,7 @@
 {
   "name": "@spm/mcp",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
   "type": "module",
   "description": "MCP server for the SPM skills registry — search, browse, and query AI agent skills",
   "license": "MIT",
@@ -28,7 +28,14 @@
     "dist",
     "README.md"
   ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
+    "prepublishOnly": "tsc",
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",

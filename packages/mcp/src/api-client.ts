@@ -1,47 +1,59 @@
 // API response types for the SPM registry
+// These match the actual API response shapes from registry.skillpkg.dev/api/v1
 
 export interface SkillSearchResult {
   name: string;
   version: string;
   description: string;
   categories: string[];
+  author: { username: string; trust_tier: string };
   downloads: number;
-  downloads_this_week?: number;
-  rating: number;
-  review_count: number;
-  author: string;
-  verified?: boolean;
+  weekly_downloads: number;
+  rating_avg: number;
+  rating_count: number;
+  tags: string[];
+  platforms: string[];
+  signed: boolean;
+  scan_security_level: string;
+  license: string;
+  deprecated: boolean;
+  published_at: string | null;
+  updated_at: string;
 }
 
 export interface SkillSearchResponse {
-  skills: SkillSearchResult[];
+  results: SkillSearchResult[];
   total: number;
   page: number;
   per_page: number;
+  pages: number;
 }
 
 export interface SkillDetail {
   name: string;
-  version: string;
   description: string;
   categories: string[];
-  license?: string;
+  author: { username: string; github_login: string; trust_tier: string };
+  authors: Array<{ username: string; trust_tier: string; role: string }>;
+  imported_from: string | null;
+  repository: string | null;
+  license: string;
+  deprecated: boolean;
+  rating_avg: number;
+  rating_count: number;
   downloads: number;
-  downloads_this_week?: number;
-  rating: number;
-  review_count: number;
-  author: string;
-  verified?: boolean;
-  keywords?: string[];
-  platforms?: string[];
+  weekly_downloads: number;
+  tags: string[];
+  platforms: string[];
+  latest_version: { version: string; published_at: string } | null;
+  keywords: string[];
 }
 
 export interface CategoryEntry {
   slug: string;
   display: string;
   icon: string;
-  description: string;
-  skill_count: number;
+  count: number;
 }
 
 export interface ApiClientError {
@@ -90,7 +102,7 @@ export const fetchSkillInfo = async (baseUrl: string, name: string): Promise<Ski
   return (await res.json()) as SkillDetail;
 };
 
-export const fetchCategories = async (baseUrl: string): Promise<CategoryEntry[]> => {
+export const fetchCategories = async (baseUrl: string): Promise<{ categories: CategoryEntry[] }> => {
   const res = await fetch(`${baseUrl}/categories`);
   if (!res.ok) {
     const error: ApiClientError = {
@@ -100,7 +112,7 @@ export const fetchCategories = async (baseUrl: string): Promise<CategoryEntry[]>
     throw error;
   }
 
-  return (await res.json()) as CategoryEntry[];
+  return (await res.json()) as { categories: CategoryEntry[] };
 };
 
 export { isApiClientError };

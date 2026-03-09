@@ -10,26 +10,30 @@ export const searchInputSchema = {
 
 export const formatSearchResults = (
   query: string,
-  skills: {
+  results: {
     name: string;
     version: string;
-    rating: number;
-    review_count: number;
+    rating_avg: number;
+    rating_count: number;
     downloads: number;
     description: string;
+    author: { username: string; trust_tier: string };
   }[],
 ): string => {
-  if (skills.length === 0) {
+  if (results.length === 0) {
     return `No skills found matching "${query}".`;
   }
 
-  const lines: string[] = [`Found ${skills.length} skills matching "${query}":\n`];
+  const lines: string[] = [`Found ${results.length} skills matching "${query}":\n`];
 
-  skills.forEach((skill, i) => {
-    const stars = `⭐ ${skill.rating.toFixed(1)}`;
-    const reviews = `(${skill.review_count} reviews)`;
+  results.forEach((skill, i) => {
+    const stars = `⭐ ${skill.rating_avg.toFixed(1)}`;
+    const reviews = `(${skill.rating_count} reviews)`;
     const dl = `↓ ${skill.downloads.toLocaleString()}`;
-    lines.push(`${i + 1}. ${skill.name} v${skill.version} ${stars} ${reviews} ${dl}`);
+    const trust = skill.author.trust_tier === 'verified' ? ' ✓' : '';
+    lines.push(
+      `${i + 1}. ${skill.name} v${skill.version} by ${skill.author.username}${trust} ${stars} ${reviews} ${dl}`,
+    );
     lines.push(`   ${skill.description}`);
     lines.push(`   Install: spm install ${skill.name}`);
     lines.push('');
@@ -51,7 +55,7 @@ export const registerSearchTool = (server: McpServer, baseUrl: string): void => 
           per_page: args.limit ?? 10,
         });
 
-        const text = formatSearchResults(args.query, response.skills);
+        const text = formatSearchResults(args.query, response.results);
 
         return { content: [{ type: 'text', text }] };
       } catch (err: unknown) {

@@ -25,28 +25,30 @@ describe('formatSearchResults', () => {
       {
         name: 'data-viz',
         version: '1.2.3',
-        rating: 4.8,
-        review_count: 142,
+        rating_avg: 4.8,
+        rating_count: 142,
         downloads: 12400,
         description: 'Charts, dashboards, and visualizations from CSV, JSON, or database output',
+        author: { username: 'almog', trust_tier: 'verified' },
       },
       {
         name: 'chart-export',
         version: '0.8.0',
-        rating: 4.5,
-        review_count: 23,
+        rating_avg: 4.5,
+        rating_count: 23,
         downloads: 3200,
         description: 'Export charts as PNG, SVG, PDF for reports and presentations',
+        author: { username: 'test-user', trust_tier: 'registered' },
       },
     ]);
 
     expect(result).toContain('Found 2 skills matching "chart"');
-    expect(result).toContain('1. data-viz v1.2.3');
+    expect(result).toContain('1. data-viz v1.2.3 by almog ✓');
     expect(result).toContain('⭐ 4.8');
     expect(result).toContain('(142 reviews)');
     expect(result).toContain('↓ 12,400');
     expect(result).toContain('spm install data-viz');
-    expect(result).toContain('2. chart-export v0.8.0');
+    expect(result).toContain('2. chart-export v0.8.0 by test-user');
     expect(result).toContain('⭐ 4.5');
     expect(result).toContain('spm install chart-export');
   });
@@ -61,18 +63,17 @@ describe('formatSkillInfo', () => {
   it('formats skill detail correctly', () => {
     const result = formatSkillInfo({
       name: 'data-viz',
-      version: '1.2.3',
       description: 'Charts, dashboards, and visualizations from CSV, JSON, or database output',
-      author: 'almog',
-      verified: true,
+      author: { username: 'almog', trust_tier: 'verified' },
       categories: ['data-viz'],
       license: 'MIT',
       downloads: 12400,
-      downloads_this_week: 1200,
-      rating: 4.8,
-      review_count: 142,
-      keywords: ['charts', 'plotly', 'd3', 'dashboards'],
+      weekly_downloads: 1200,
+      rating_avg: 4.8,
+      rating_count: 142,
+      tags: ['charts', 'plotly', 'd3', 'dashboards'],
       platforms: ['all'],
+      latest_version: { version: '1.2.3' },
     });
 
     expect(result).toContain('data-viz v1.2.3');
@@ -91,45 +92,53 @@ describe('formatSkillInfo', () => {
   it('formats skill without optional fields', () => {
     const result = formatSkillInfo({
       name: 'minimal-skill',
-      version: '0.1.0',
       description: 'A minimal skill for testing purposes',
-      author: 'test-user',
+      author: { username: 'test-user', trust_tier: 'registered' },
       categories: ['other'],
       downloads: 5,
-      rating: 0,
-      review_count: 0,
+      rating_avg: 0,
+      rating_count: 0,
     });
 
-    expect(result).toContain('minimal-skill v0.1.0');
+    expect(result).toContain('minimal-skill vunknown');
     expect(result).toContain('Author: test-user');
     expect(result).not.toContain('verified');
     expect(result).not.toContain('License:');
     expect(result).not.toContain('Tags:');
+  });
+
+  it('shows imported from source', () => {
+    const result = formatSkillInfo({
+      name: 'pdf',
+      description: 'PDF skill',
+      author: { username: 'anthropics', trust_tier: 'verified' },
+      categories: ['documents'],
+      downloads: 0,
+      rating_avg: 0,
+      rating_count: 0,
+      imported_from: 'https://github.com/anthropics/skills/tree/main/skills/pdf',
+    });
+
+    expect(result).toContain('Imported from: https://github.com/anthropics/skills');
   });
 });
 
 describe('formatCategories', () => {
   it('lists all categories with counts', () => {
     const result = formatCategories([
-      {
-        icon: '📄',
-        display: 'Documents',
-        skill_count: 34,
-        description: 'PDF, DOCX, text processing',
-      },
-      {
-        icon: '📊',
-        display: 'Data & Visualization',
-        skill_count: 28,
-        description: 'Charts, dashboards, analytics',
-      },
-      { icon: '🎨', display: 'Frontend', skill_count: 22, description: 'UI, React, HTML/CSS' },
+      { slug: 'documents', icon: '📄', display: 'Documents', count: 34 },
+      { slug: 'data-viz', icon: '📊', display: 'Data & Visualization', count: 28 },
+      { slug: 'frontend', icon: '🎨', display: 'Frontend', count: 22 },
     ]);
 
     expect(result).toContain('SPM Skill Categories:');
-    expect(result).toContain('📄 Documents (34 skills) — PDF, DOCX, text processing');
-    expect(result).toContain('📊 Data & Visualization (28 skills) — Charts, dashboards, analytics');
-    expect(result).toContain('🎨 Frontend (22 skills) — UI, React, HTML/CSS');
+    expect(result).toContain('📄 Documents (34 skills) — PDF, DOCX, PPTX, XLSX, text processing');
+    expect(result).toContain(
+      '📊 Data & Visualization (28 skills) — Charts, dashboards, CSV/JSON, visualization',
+    );
+    expect(result).toContain(
+      '🎨 Frontend (22 skills) — UI, React, HTML/CSS, design systems',
+    );
   });
 });
 
@@ -138,10 +147,11 @@ describe('formatCategories', () => {
 describe('fetchSkills', () => {
   it('returns search results on success', async () => {
     const mockResponse = {
-      skills: [{ name: 'test-skill', version: '1.0.0' }],
+      results: [{ name: 'test-skill', version: '1.0.0' }],
       total: 1,
       page: 1,
       per_page: 10,
+      pages: 1,
     };
     mockFetch.mockResolvedValue({
       ok: true,
@@ -203,16 +213,18 @@ describe('fetchSkillInfo', () => {
 
 describe('fetchCategories', () => {
   it('returns categories on success', async () => {
-    const mockCategories = [
-      { slug: 'documents', display: 'Documents', icon: '📄', description: 'test', skill_count: 10 },
-    ];
+    const mockResponse = {
+      categories: [
+        { slug: 'documents', display: 'Documents', icon: '📄', count: 10 },
+      ],
+    };
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(mockCategories),
+      json: () => Promise.resolve(mockResponse),
     });
 
     const result = await fetchCategories('https://registry.skillpkg.dev/api/v1');
-    expect(result).toEqual(mockCategories);
+    expect(result).toEqual(mockResponse);
   });
 
   it('handles network errors', async () => {

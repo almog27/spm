@@ -13,7 +13,7 @@ const main = async (): Promise<void> => {
 
   const server = new McpServer({
     name: 'spm-registry',
-    version: '0.0.1',
+    version: '0.1.0',
   });
 
   registerSearchTool(server, baseUrl);

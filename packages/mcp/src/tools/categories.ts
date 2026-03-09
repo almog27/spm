@@ -1,18 +1,21 @@
 import { fetchCategories, isApiClientError } from '../api-client.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { CATEGORY_INFO, type SkillCategory } from '@spm/shared';
 
 export const formatCategories = (
   categories: {
+    slug: string;
     icon: string;
     display: string;
-    skill_count: number;
-    description: string;
+    count: number;
   }[],
 ): string => {
   const lines: string[] = ['SPM Skill Categories:\n'];
 
   for (const cat of categories) {
-    lines.push(`${cat.icon} ${cat.display} (${cat.skill_count} skills) — ${cat.description}`);
+    const info = CATEGORY_INFO[cat.slug as SkillCategory];
+    const description = info?.description ?? '';
+    lines.push(`${cat.icon} ${cat.display} (${cat.count} skills) — ${description}`);
   }
 
   return lines.join('\n');
@@ -21,8 +24,8 @@ export const formatCategories = (
 export const registerCategoriesTool = (server: McpServer, baseUrl: string): void => {
   server.tool('spm_categories', 'List all SPM skill categories', async () => {
     try {
-      const categories = await fetchCategories(baseUrl);
-      const text = formatCategories(categories);
+      const response = await fetchCategories(baseUrl);
+      const text = formatCategories(response.categories);
       return { content: [{ type: 'text', text }] };
     } catch (err: unknown) {
       const message = isApiClientError(err) ? err.message : 'Failed to fetch categories';
