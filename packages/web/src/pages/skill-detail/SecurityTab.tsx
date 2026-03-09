@@ -134,6 +134,23 @@ export const SecurityTab = ({ skill }: { skill: SkillFull }) => (
                 <span style={{ color: icon.color, marginLeft: 'auto' }}>
                   {layerStatusLabel(layer.status, layer.confidence)}
                 </span>
+                {layer.status === 'error' && layer.detail && (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 11,
+                      color: 'var(--color-text-faint)',
+                      marginLeft: 8,
+                      maxWidth: 300,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                    title={layer.detail}
+                  >
+                    ({layer.detail})
+                  </span>
+                )}
               </div>
             );
           })

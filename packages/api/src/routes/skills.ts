@@ -718,6 +718,7 @@ skillsRoutes.get('/skills/:name', async (c) => {
         name: (details?.name as string) ?? `Layer ${s.layer}`,
         status: details?.status ?? s.status,
         confidence: s.confidence,
+        ...(details?.error ? { detail: details.error as string } : {}),
       };
     });
 

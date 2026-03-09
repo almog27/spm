@@ -23,6 +23,7 @@ export interface LayerResult {
   blocked: number;
   warnings: number;
   passed: boolean;
+  error?: string;
 }
 
 export interface PipelineResult {
@@ -94,16 +95,21 @@ export const runSecurityPipeline = async (
   }
 
   // Run L2 and L3 in parallel, with graceful degradation (skip if tokens not configured)
+  let l2Error: string | undefined;
+  let l3Error: string | undefined;
+
   const l2Promise = hfApiToken
     ? scanWithDeBERTa(files, hfApiToken).catch((err: unknown) => {
-        console.warn('Layer 2 (DeBERTa) failed, degrading gracefully:', err);
+        l2Error = err instanceof Error ? err.message : String(err);
+        console.warn('Layer 2 (DeBERTa) failed, degrading gracefully:', l2Error);
         return null;
       })
     : Promise.resolve(null);
 
   const l3Promise = lakeraApiKey
     ? scanWithLakera(files, lakeraApiKey).catch((err: unknown) => {
-        console.warn('Layer 3 (Lakera) failed, degrading gracefully:', err);
+        l3Error = err instanceof Error ? err.message : String(err);
+        console.warn('Layer 3 (Lakera) failed, degrading gracefully:', l3Error);
         return null;
       })
     : Promise.resolve(null);
@@ -150,6 +156,7 @@ export const runSecurityPipeline = async (
       blocked: 0,
       warnings: 0,
       passed: true,
+      error: l2Error,
     });
   }
 
@@ -183,6 +190,7 @@ export const runSecurityPipeline = async (
       blocked: 0,
       warnings: 0,
       passed: true,
+      error: l3Error,
     });
   }
 

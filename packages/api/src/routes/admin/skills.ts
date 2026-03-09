@@ -352,6 +352,14 @@ skillsRoutes.post('/admin/skills/:name/rescan', zValidator('json', RescanSchema)
   for (const layer of scanResult.layers) {
     const dbStatus = dbStatusMap[layer.status] ?? 'pending';
 
+    const layerDetails = {
+      name: layer.name,
+      status: layer.status,
+      blocked: layer.blocked,
+      warnings: layer.warnings,
+      ...(layer.error ? { error: layer.error } : {}),
+    };
+
     await db
       .insert(scans)
       .values({
@@ -359,24 +367,14 @@ skillsRoutes.post('/admin/skills/:name/rescan', zValidator('json', RescanSchema)
         layer: layer.layer,
         status: dbStatus,
         confidence: layer.confidence,
-        details: {
-          name: layer.name,
-          status: layer.status,
-          blocked: layer.blocked,
-          warnings: layer.warnings,
-        },
+        details: layerDetails,
       })
       .onConflictDoUpdate({
         target: [scans.versionId, scans.layer],
         set: {
           status: dbStatus,
           confidence: layer.confidence,
-          details: {
-            name: layer.name,
-            status: layer.status,
-            blocked: layer.blocked,
-            warnings: layer.warnings,
-          },
+          details: layerDetails,
           scannedAt: new Date(),
         },
       });
@@ -414,6 +412,7 @@ skillsRoutes.post('/admin/skills/:name/rescan', zValidator('json', RescanSchema)
       name: l.name,
       status: l.status,
       confidence: l.confidence,
+      ...(l.error ? { error: l.error } : {}),
     })),
     rescanned_at: new Date().toISOString(),
   });
