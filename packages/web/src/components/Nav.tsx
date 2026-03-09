@@ -1,23 +1,28 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const Nav = ({
-  query,
+  query: externalQuery,
   onQueryChange,
 }: {
   query?: string;
   onQueryChange?: (q: string) => void;
 }) => {
+  const [localQuery, setLocalQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { isAuthenticated, user, token, signOut, isLoading } = useAuth();
 
+  const query = externalQuery ?? localQuery;
+  const setQuery = onQueryChange ?? setLocalQuery;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const value = inputRef.current?.value.trim();
+    const value = query.trim();
     if (value) {
       navigate(`/search?q=${encodeURIComponent(value)}`);
+      setQuery('');
     }
   };
 
@@ -87,7 +92,7 @@ export const Nav = ({
           <input
             ref={inputRef}
             value={query ?? ''}
-            onChange={(e) => onQueryChange?.(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Search skills..."
             style={{
               flex: 1,
@@ -102,7 +107,7 @@ export const Nav = ({
           />
           {query && (
             <span
-              onClick={() => onQueryChange?.('')}
+              onClick={() => setQuery('')}
               style={{
                 color: 'var(--color-text-muted)',
                 cursor: 'pointer',
