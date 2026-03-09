@@ -11,7 +11,8 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "import-skills": "tsx scripts/import-skills.ts"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",
