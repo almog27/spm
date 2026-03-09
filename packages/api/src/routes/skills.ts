@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { eq, and, or, ilike, desc, sql, count } from 'drizzle-orm';
+import { eq, ne, and, or, ilike, desc, sql, count } from 'drizzle-orm';
 import { compareTwoStrings } from 'string-similarity';
 import { ManifestSchema, ERROR_CODES, createApiError, TRUST_TIERS } from '@spm/shared';
 import type { Manifest } from '@spm/shared';
@@ -413,8 +413,8 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
   const { q, category, trust, platform, security, sort, page, per_page } = params;
   const offset = (page - 1) * per_page;
 
-  // Build WHERE conditions
-  const conditions = [];
+  // Build WHERE conditions — always exclude blocked skills from public search
+  const conditions = [ne(skills.status, 'blocked')];
 
   if (q) {
     // Use GIN full-text search with tag matching fallback
@@ -423,7 +423,8 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
       conditions.push(searchCondition);
     } else {
       // Fallback to ILIKE if the query can't be parsed into tsquery
-      conditions.push(or(ilike(skills.name, `%${q}%`), ilike(skills.description, `%${q}%`)));
+      const fallback = or(ilike(skills.name, `%${q}%`), ilike(skills.description, `%${q}%`));
+      if (fallback) conditions.push(fallback);
     }
   }
 
@@ -516,6 +517,7 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
       deprecated: skills.deprecated,
       ratingAvg: skills.ratingAvg,
       ratingCount: skills.ratingCount,
+      scanSecurityLevel: skills.scanSecurityLevel,
       ownerId: skills.ownerId,
       createdAt: skills.createdAt,
       updatedAt: skills.updatedAt,
@@ -551,7 +553,7 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
         .where(eq(skillPlatforms.skillId, row.id));
 
       const [author] = await db
-        .select({ username: users.username })
+        .select({ username: users.username, trustTier: users.trustTier })
         .from(users)
         .where(eq(users.id, row.ownerId))
         .limit(1);
@@ -578,7 +580,10 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
         name: row.name,
         version: latestVersion?.version ?? null,
         description: row.description,
-        author: author?.username ?? 'unknown',
+        author: {
+          username: author?.username ?? 'unknown',
+          trust_tier: author?.trustTier ?? 'registered',
+        },
         categories: row.categories,
         tags: tagRows.map((t) => t.tag),
         platforms: platformRows.map((p) => p.platform),
@@ -587,6 +592,7 @@ skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) =>
         rating_avg: row.ratingAvg,
         rating_count: row.ratingCount,
         signed: latestVersion?.sigstoreBundleKey != null,
+        scan_security_level: row.scanSecurityLevel,
         license: row.license,
         deprecated: row.deprecated,
         published_at: latestVersion?.publishedAt?.toISOString() ?? null,
