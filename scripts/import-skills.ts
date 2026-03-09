@@ -330,9 +330,14 @@ const readTokenFromConfig = (): string | null => {
 
 const main = async () => {
   const args = process.argv.slice(2);
-  const apiUrl = args.includes('--api-url')
+  let apiUrl = args.includes('--api-url')
     ? args[args.indexOf('--api-url') + 1]
     : 'http://localhost:8787';
+
+  // Ensure API URL includes the /api/v1 base path
+  if (!apiUrl.includes('/api/v1')) {
+    apiUrl = apiUrl.replace(/\/+$/, '') + '/api/v1';
+  }
   const dryRun = args.includes('--dry-run');
   const sourceFilter = args.includes('--source') ? args[args.indexOf('--source') + 1] : null;
 
