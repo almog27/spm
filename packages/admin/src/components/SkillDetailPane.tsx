@@ -172,7 +172,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
     return (
       <div style={{ padding: 24 }}>
         <Button
-          label="\u2190 Back to list"
+          label="← Back to list"
           color="text-dim"
           small
           onClick={() => set({ skill: null })}
@@ -211,7 +211,7 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
       {/* Back button */}
       <div style={{ marginBottom: 16 }}>
         <Button
-          label="\u2190 Back to list"
+          label="← Back to list"
           color="text-dim"
           small
           onClick={() => set({ skill: null })}
@@ -619,16 +619,6 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
                     </div>
                   </div>
 
-                  {/* Re-scan button */}
-                  <div>
-                    <Button
-                      label={rescanning ? 'Scanning...' : 'Re-scan'}
-                      color="default"
-                      small
-                      onClick={handleRescan}
-                    />
-                  </div>
-
                   {/* Scan layers */}
                   <div>
                     <span
@@ -886,6 +876,14 @@ export const SkillDetailPane = ({ skillName }: { skillName: string }) => {
               >
                 Open on web →
               </a>
+
+              {/* Re-scan */}
+              <Button
+                label={rescanning ? 'Scanning...' : 'Re-scan Security'}
+                color="default"
+                small
+                onClick={handleRescan}
+              />
 
               {/* Block / Unblock */}
               {detail.status === 'blocked' ? (
