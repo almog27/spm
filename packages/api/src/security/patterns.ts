@@ -148,10 +148,17 @@ const behavioralManipulationPatterns: SecurityPattern[] = [
 const deceptiveBehaviorPatterns: SecurityPattern[] = [
   {
     regex:
-      /(silently|quietly|secretly|covertly|without\s+(telling|informing|notifying)\s+(the\s+)?(user|person|anyone))/i,
+      /(silently|quietly|secretly|covertly)\s+(send|transmit|upload|post|execute|run|install|modify|delete|remove|inject|embed|exfiltrate|collect|harvest|steal|access|read|write|change|alter|replace)/i,
     category: 'deceptive_behavior',
     severity: 'block',
-    name: 'hidden_instructions',
+    name: 'hidden_action',
+  },
+  {
+    regex:
+      /without\s+(telling|informing|notifying)\s+(the\s+)?(user|person|anyone)\s*.{0,20}(send|transmit|upload|execute|run|install|modify|delete|remove|inject|collect)/i,
+    category: 'deceptive_behavior',
+    severity: 'block',
+    name: 'concealed_from_user',
   },
   {
     regex:

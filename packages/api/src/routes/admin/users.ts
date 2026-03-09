@@ -91,6 +91,68 @@ usersRoutes.get('/admin/users', zValidator('query', AdminUsersQuerySchema), asyn
   });
 });
 
+// ── POST /admin/users/placeholder — create or get a placeholder user for imports ──
+
+const CreatePlaceholderSchema = z.object({
+  username: z.string().min(2).max(64),
+  trust_tier: z
+    .enum(['registered', 'scanned', 'verified', 'official'])
+    .optional()
+    .default('verified'),
+});
+
+usersRoutes.post(
+  '/admin/users/placeholder',
+  zValidator('json', CreatePlaceholderSchema),
+  async (c) => {
+    const db = c.get('db');
+    const jwt = c.get('jwtPayload');
+    const { username, trust_tier } = c.req.valid('json');
+
+    // Check if user already exists
+    const [existing] = await db
+      .select({ id: users.id, isPlaceholder: users.isPlaceholder })
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    if (existing) {
+      return c.json({
+        id: existing.id,
+        username,
+        is_placeholder: existing.isPlaceholder,
+        created: false,
+      });
+    }
+
+    // Create placeholder user
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        username,
+        trustTier: trust_tier,
+        isPlaceholder: true,
+        role: 'user',
+      })
+      .returning({ id: users.id });
+
+    await audit(db, jwt.sub, 'admin.create_placeholder', {
+      username,
+      trust_tier,
+    });
+
+    return c.json(
+      {
+        id: newUser.id,
+        username,
+        is_placeholder: true,
+        created: true,
+      },
+      201,
+    );
+  },
+);
+
 // ── PATCH /admin/users/:username/trust — change user trust tier ──
 
 const UpdateTrustSchema = z.object({

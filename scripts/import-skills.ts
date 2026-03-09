@@ -284,14 +284,48 @@ const packSkill = (skill: ParsedSkill): { sklPath: string; manifest: Record<stri
   return { sklPath, manifest };
 };
 
-// ── API publisher ──
+// ── API helpers ──
 
+/** Create or get a placeholder user for the given org. Returns user ID. */
+const ensurePlaceholderUser = async (
+  apiUrl: string,
+  token: string,
+  source: SkillSource,
+): Promise<string> => {
+  const res = await fetch(`${apiUrl}/admin/users/placeholder`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      username: source.owner,
+      trust_tier: source.trustTier,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    throw new Error(`Failed to create placeholder user: ${res.status} ${body.message ?? ''}`);
+  }
+
+  const data = (await res.json()) as { id: string; created: boolean };
+  if (data.created) {
+    console.log(`  Created placeholder user: @${source.owner} (${source.trustTier})`);
+  } else {
+    console.log(`  Using existing user: @${source.owner}`);
+  }
+  return data.id;
+};
+
+/** Publish a skill via the API, on behalf of a placeholder user. */
 const publishToApi = async (
   apiUrl: string,
   token: string,
   sklPath: string,
   manifest: Record<string, unknown>,
   importedFrom: string,
+  publishAsUserId: string,
 ): Promise<{ success: boolean; error?: string }> => {
   const sklBuffer = await import('node:fs/promises').then((fs) => fs.readFile(sklPath));
 
@@ -304,14 +338,26 @@ const publishToApi = async (
     headers: {
       Authorization: `Bearer ${token}`,
       'X-Imported-From': importedFrom,
+      'X-Publish-As': publishAsUserId,
     },
     body: formData,
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const msg = (body as Record<string, unknown>).message ?? res.statusText;
-    return { success: false, error: `${res.status}: ${msg}` };
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const msg = (body.message as string) ?? res.statusText;
+    // Show security findings if present
+    const details = body.details as Record<string, unknown> | undefined;
+    let extra = '';
+    if (details?.findings) {
+      const findings = details.findings as Array<Record<string, unknown>>;
+      extra =
+        '\n' +
+        findings
+          .map((f) => `      [${f.severity}] ${f.file}:${f.line} — ${f.category}: ${f.match}`)
+          .join('\n');
+    }
+    return { success: false, error: `${res.status}: ${msg}${extra}` };
   }
 
   return { success: true };
@@ -371,6 +417,18 @@ const main = async () => {
 
     console.log(`\n── ${source.org} (${source.owner}/${source.repo}) ──\n`);
 
+    // Create or get placeholder user for this org
+    let placeholderUserId: string | null = null;
+    if (!dryRun) {
+      try {
+        placeholderUserId = await ensurePlaceholderUser(apiUrl, token!, source);
+      } catch (err) {
+        console.error(`  ✗ Failed to create placeholder user: ${err}`);
+        continue;
+      }
+      console.log('');
+    }
+
     let skillDirs: string[];
     try {
       skillDirs = listSkillDirs(source);
@@ -414,9 +472,16 @@ const main = async () => {
         continue;
       }
 
-      // Publish
+      // Publish under the placeholder user
       try {
-        const result = await publishToApi(apiUrl, token!, sklPath, manifest, skill.sourceUrl);
+        const result = await publishToApi(
+          apiUrl,
+          token!,
+          sklPath,
+          manifest,
+          skill.sourceUrl,
+          placeholderUserId!,
+        );
         if (result.success) {
           console.log(`✓ ${skill.name}@${skill.version} [${skill.category}]`);
           results.push({ name: skill.name, source: source.owner, status: 'published' });

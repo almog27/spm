@@ -62,10 +62,16 @@ const isPlaceholderUser = async (db: Database, userId: string): Promise<boolean>
 skillsRoutes.post('/skills', authed, async (c) => {
   const db = c.get('db');
   const jwt = c.get('jwtPayload');
-  const userId = jwt.sub;
+  let userId = jwt.sub;
 
-  // Placeholder users (created by import script) cannot publish
-  if (await isPlaceholderUser(db, userId)) {
+  // Admin can publish on behalf of another user via X-Publish-As header (user ID)
+  const publishAs = jwt.role === 'admin' ? c.req.header('X-Publish-As') : null;
+  if (publishAs) {
+    userId = publishAs;
+  }
+
+  // Placeholder users (created by import script) cannot publish directly
+  if (!publishAs && (await isPlaceholderUser(db, userId))) {
     return c.json(
       createApiError('FORBIDDEN', { message: 'Placeholder accounts cannot publish skills' }),
       ERROR_CODES.FORBIDDEN.status,
