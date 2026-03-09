@@ -43,9 +43,10 @@ export const SkillHero = ({ skill }: { skill: SkillFull }) => (
             href={skill.importedFrom}
             target="_blank"
             rel="noopener noreferrer"
+            title={`Imported from ${skill.importedFrom}`}
             style={{ textDecoration: 'none' }}
           >
-            <Badge label="Imported" color="#818cf8" />
+            <Badge label="Imported ↗" color="#818cf8" />
           </a>
         )}
       </div>

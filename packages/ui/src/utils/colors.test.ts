@@ -31,7 +31,16 @@ describe('withAlpha', () => {
     expect(result).toBe('color-mix(in srgb, var(--color-red) 15%, transparent)');
   });
 
-  it('returns raw value for non-variable colors', () => {
-    expect(withAlpha('#ff0000', 0.5)).toBe('#ff0000');
+  it('applies alpha to hex colors', () => {
+    expect(withAlpha('#ff0000', 0.5)).toBe('#ff000080');
+    expect(withAlpha('#818cf8', 0.1)).toBe('#818cf81a');
+  });
+
+  it('applies alpha to shorthand hex colors', () => {
+    expect(withAlpha('#f00', 0.5)).toBe('#ff000080');
+  });
+
+  it('returns raw value for non-hex non-variable colors', () => {
+    expect(withAlpha('rgb(0,0,0)', 0.5)).toBe('rgb(0,0,0)');
   });
 });
