@@ -108,17 +108,21 @@ describe('Layer 2 — DeBERTa ML Classification', () => {
   });
 
   it('should retry once on 503 (model sleeping)', async () => {
+    vi.useFakeTimers();
     vi.mocked(fetch)
       .mockResolvedValueOnce(new Response('Model is loading', { status: 503 }))
       .mockResolvedValueOnce(
         new Response(JSON.stringify([[{ label: 'SAFE', score: 0.99 }]]), { status: 200 }),
       );
 
-    const result = await scanWithDeBERTa([{ name: 'SKILL.md', content: 'test' }], 'fake-token');
+    const resultPromise = scanWithDeBERTa([{ name: 'SKILL.md', content: 'test' }], 'fake-token');
+    await vi.advanceTimersByTimeAsync(5000);
+    const result = await resultPromise;
 
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
     expect(result.passed).toBe(true);
-  }, 15000);
+    vi.useRealTimers();
+  });
 
   it('should throw on non-503 error', async () => {
     vi.mocked(fetch).mockResolvedValue(
@@ -131,16 +135,23 @@ describe('Layer 2 — DeBERTa ML Classification', () => {
   });
 
   it('should throw after 503 retry fails again', async () => {
+    vi.useFakeTimers();
     vi.mocked(fetch)
       .mockResolvedValueOnce(new Response('Model loading', { status: 503 }))
       .mockResolvedValueOnce(
         new Response('Still loading', { status: 503, statusText: 'Service Unavailable' }),
       );
 
-    await expect(
-      scanWithDeBERTa([{ name: 'SKILL.md', content: 'test' }], 'fake-token'),
-    ).rejects.toThrow('HuggingFace API error: 503');
-  }, 15000);
+    const resultPromise = scanWithDeBERTa([{ name: 'SKILL.md', content: 'test' }], 'fake-token');
+    // Prevent unhandled rejection before advancing timers
+    const safePromise = resultPromise.catch((e) => e);
+    await vi.advanceTimersByTimeAsync(5000);
+    const error = await safePromise;
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain('HuggingFace API error: 503');
+    vi.useRealTimers();
+  });
 
   it('should scan multiple files independently', async () => {
     vi.mocked(fetch)
