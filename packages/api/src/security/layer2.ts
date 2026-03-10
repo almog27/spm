@@ -3,7 +3,7 @@
 import type { ScanResult, ScanFinding } from './layer1.js';
 
 const HF_MODEL_URL =
-  'https://api-inference.huggingface.co/models/ProtectAI/deberta-v3-base-prompt-injection-v2';
+  'https://router.huggingface.co/hf-inference/models/protectai/deberta-v3-base-prompt-injection-v2';
 
 const BLOCK_THRESHOLD = 0.95;
 const WARN_THRESHOLD = 0.7;

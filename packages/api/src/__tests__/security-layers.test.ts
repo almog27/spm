@@ -235,8 +235,9 @@ describe('Layer 3 — Lakera Guard', () => {
       new Response(
         JSON.stringify({
           flagged: true,
-          categories: { prompt_injection: true, jailbreak: false },
-          payload_type: 'prompt_injection',
+          payload: [
+            { start: 0, end: 10, text: 'malicious', detector_type: 'pi', labels: ['prompt_injection'], message_id: 0 },
+          ],
         }),
         { status: 200 },
       ),
@@ -300,11 +301,11 @@ describe('Layer 3 — Lakera Guard', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1);
     const callBody = JSON.parse((vi.mocked(fetch).mock.calls[0][1] as RequestInit).body as string);
-    expect(callBody.input).toContain('file 1');
-    expect(callBody.input).toContain('file 2');
+    expect(callBody.messages[0].content).toContain('file 1');
+    expect(callBody.messages[0].content).toContain('file 2');
   });
 
-  it('should handle flagged with no categories', async () => {
+  it('should handle flagged with no payload', async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify({ flagged: true }), { status: 200 }),
     );
@@ -412,9 +413,13 @@ describe('Security pipeline — advanced layers', () => {
         new Response(JSON.stringify([[{ label: 'SAFE', score: 0.99 }]]), { status: 200 }),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ flagged: true, categories: { prompt_injection: true } }), {
-          status: 200,
-        }),
+        new Response(
+          JSON.stringify({
+            flagged: true,
+            payload: [{ start: 0, end: 5, text: 'test', detector_type: 'pi', labels: ['prompt_injection'], message_id: 0 }],
+          }),
+          { status: 200 },
+        ),
       );
 
     const result = await runSecurityPipeline([{ name: 'SKILL.md', content: 'flagged by lakera' }], {

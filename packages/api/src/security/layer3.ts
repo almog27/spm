@@ -4,10 +4,18 @@ import type { ScanResult, ScanFinding } from './layer1.js';
 
 const LAKERA_GUARD_URL = 'https://api.lakera.ai/v2/guard';
 
+interface LakeraPayload {
+  start: number;
+  end: number;
+  text: string;
+  detector_type: string;
+  labels: string[];
+  message_id: number;
+}
+
 interface LakeraResponse {
   flagged: boolean;
-  categories?: Record<string, boolean>;
-  payload_type?: string;
+  payload?: LakeraPayload[];
 }
 
 export const scanWithLakera = async (
@@ -31,7 +39,9 @@ export const scanWithLakera = async (
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ input }),
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: input }],
+    }),
   });
 
   if (!res.ok) {
@@ -41,20 +51,18 @@ export const scanWithLakera = async (
   const data = (await res.json()) as LakeraResponse;
 
   if (data.flagged) {
-    const flaggedCategories = data.categories
-      ? Object.entries(data.categories)
-          .filter(([, v]) => v)
-          .map(([k]) => k)
+    const flaggedLabels = data.payload
+      ? [...new Set(data.payload.flatMap((p) => p.labels))]
       : [];
 
     findings.push({
       category: 'lakera_guard',
       severity: 'warn',
       patternName: 'lakera_flagged',
-      match: `Lakera flagged: ${flaggedCategories.join(', ') || 'prompt_injection'}`,
+      match: `Lakera flagged: ${flaggedLabels.join(', ') || 'prompt_injection'}`,
       file: 'all_content',
       line: 0,
-      context: data.payload_type ?? 'unknown',
+      context: flaggedLabels.join(', ') || 'unknown',
     });
   }
 
