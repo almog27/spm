@@ -1,8 +1,15 @@
-# SPM — Skills Package Manager
+<p align="center">
+  <a href="https://skillpkg.dev">
+    <img src="assets/logo-dark.png" alt="SPM" width="120" />
+  </a>
+</p>
 
-**SPM is how you find, install, and share Agent Skills.**
+<h1 align="center">SPM — Skills Package Manager</h1>
 
-🌐 **[skillpkg.dev](https://skillpkg.dev)** — Browse skills, search the registry, view security scans
+<p align="center">
+  <strong>Find, install, and share Agent Skills.</strong><br/>
+  <a href="https://skillpkg.dev">skillpkg.dev</a> · <a href="https://www.npmjs.com/package/@skillpkg/cli">npm</a> · <a href="https://skillpkg.dev/docs">docs</a>
+</p>
 
 ```bash
 # Install the CLI
