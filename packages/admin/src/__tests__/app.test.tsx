@@ -79,9 +79,9 @@ describe('AdminPanel', () => {
     expect(screen.getByText('admin')).toBeInTheDocument();
   });
 
-  it('shows Back to registry link', () => {
+  it('shows skillpkg.dev link', () => {
     renderPanel();
-    const link = screen.getByText((content) => content.includes('Back to registry'));
+    const link = screen.getByText((content) => content.includes('skillpkg.dev'));
     expect(link).toBeInTheDocument();
   });
 

@@ -89,6 +89,17 @@ export const AdminPanel = () => {
           </a>
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <a
+            href="https://skillpkg.dev"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 12,
+              color: 'var(--color-text-dim)',
+              textDecoration: 'none',
+            }}
+          >
+            skillpkg.dev &rarr;
+          </a>
           <span
             style={{
               fontFamily: 'var(--font-mono)',
@@ -113,17 +124,6 @@ export const AdminPanel = () => {
           >
             Sign out
           </button>
-          <a
-            href="https://skillpkg.dev"
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: 13,
-              color: 'var(--color-text-dim)',
-              textDecoration: 'none',
-            }}
-          >
-            &larr; Back to registry
-          </a>
         </div>
       </nav>
 
