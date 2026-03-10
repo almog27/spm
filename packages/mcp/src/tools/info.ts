@@ -45,9 +45,7 @@ export const formatSkillInfo = (skill: {
   }
 
   const weeklyDl =
-    skill.weekly_downloads != null
-      ? ` (${skill.weekly_downloads.toLocaleString()} this week)`
-      : '';
+    skill.weekly_downloads != null ? ` (${skill.weekly_downloads.toLocaleString()} this week)` : '';
   lines.push(`Downloads: ${skill.downloads.toLocaleString()}${weeklyDl}`);
   lines.push(`Rating: ⭐ ${skill.rating_avg.toFixed(1)} (${skill.rating_count} reviews)`);
 

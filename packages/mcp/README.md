@@ -1,19 +1,19 @@
-# @spm/mcp
+# @skillpkg/mcp
 
 MCP server for the [SPM](https://skillpkg.dev) skills registry. Search, browse, and query AI agent skills from Claude Desktop, claude CLI, or any MCP client.
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `spm_search` | Search skills by query and category |
-| `spm_info` | Get detailed info about a specific skill |
-| `spm_categories` | List all skill categories with counts |
+| Tool             | Description                              |
+| ---------------- | ---------------------------------------- |
+| `spm_search`     | Search skills by query and category      |
+| `spm_info`       | Get detailed info about a specific skill |
+| `spm_categories` | List all skill categories with counts    |
 
 ## Installation
 
 ```bash
-npm install -g @spm/mcp
+npm install -g @skillpkg/mcp
 ```
 
 ## Configuration

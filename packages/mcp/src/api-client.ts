@@ -102,7 +102,9 @@ export const fetchSkillInfo = async (baseUrl: string, name: string): Promise<Ski
   return (await res.json()) as SkillDetail;
 };
 
-export const fetchCategories = async (baseUrl: string): Promise<{ categories: CategoryEntry[] }> => {
+export const fetchCategories = async (
+  baseUrl: string,
+): Promise<{ categories: CategoryEntry[] }> => {
   const res = await fetch(`${baseUrl}/categories`);
   if (!res.ok) {
     const error: ApiClientError = {

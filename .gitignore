@@ -31,5 +31,8 @@ coverage/
 # Skills (author in separate repos)
 skills/
 
+# Internal scripts (import, discovery tooling)
+scripts/
+
 # Logs
 *.log

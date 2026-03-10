@@ -136,9 +136,7 @@ describe('formatCategories', () => {
     expect(result).toContain(
       '📊 Data & Visualization (28 skills) — Charts, dashboards, CSV/JSON, visualization',
     );
-    expect(result).toContain(
-      '🎨 Frontend (22 skills) — UI, React, HTML/CSS, design systems',
-    );
+    expect(result).toContain('🎨 Frontend (22 skills) — UI, React, HTML/CSS, design systems');
   });
 });
 
@@ -214,9 +212,7 @@ describe('fetchSkillInfo', () => {
 describe('fetchCategories', () => {
   it('returns categories on success', async () => {
     const mockResponse = {
-      categories: [
-        { slug: 'documents', display: 'Documents', icon: '📄', count: 10 },
-      ],
+      categories: [{ slug: 'documents', display: 'Documents', icon: '📄', count: 10 }],
     };
     mockFetch.mockResolvedValue({
       ok: true,
