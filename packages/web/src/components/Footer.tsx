@@ -73,6 +73,19 @@ export const Footer = () => {
         >
           Contact
         </a>
+        <a
+          href="https://github.com/almog27/spm"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 12,
+            color: 'var(--color-text-muted)',
+            textDecoration: 'none',
+          }}
+        >
+          GitHub
+        </a>
       </div>
     </footer>
   );
