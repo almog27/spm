@@ -1,6 +1,6 @@
 # @skillpkg/mcp
 
-MCP server for the [SPM](https://skillpkg.dev) skills registry. Search, browse, and query AI agent skills from Claude Desktop, claude CLI, or any MCP client.
+MCP server for the [SPM](https://skillpkg.dev) skills registry. Search, browse, and query AI agent skills from Claude Desktop, Claude Code, Cursor, or any MCP client.
 
 ## Tools
 
@@ -10,13 +10,31 @@ MCP server for the [SPM](https://skillpkg.dev) skills registry. Search, browse, 
 | `spm_info`       | Get detailed info about a specific skill |
 | `spm_categories` | List all skill categories with counts    |
 
-## Installation
+## Quick Start
 
-```bash
-npm install -g @skillpkg/mcp
+No installation required — use `npx` to run on demand.
+
+### Claude Code
+
+Add a `.mcp.json` file to your project root:
+
+```json
+{
+  "mcpServers": {
+    "spm": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@skillpkg/mcp"]
+    }
+  }
+}
 ```
 
-## Configuration
+Or add it via the CLI:
+
+```bash
+claude mcp add spm -- npx -y @skillpkg/mcp
+```
 
 ### Claude Desktop
 
@@ -26,27 +44,61 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 {
   "mcpServers": {
     "spm": {
-      "command": "spm-mcp"
+      "command": "npx",
+      "args": ["-y", "@skillpkg/mcp"],
+      "env": {
+        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+      }
     }
   }
 }
 ```
 
-### Claude Code
+> **Note:** Claude Desktop has a limited PATH. You may need to adjust the `env.PATH` to include the directory where `node` is installed. Run `dirname $(which node)` in your terminal to find it.
 
-```bash
-claude mcp add spm spm-mcp
-```
+### Cursor
 
-### Custom registry URL
-
-Set the `SPM_REGISTRY_URL` environment variable to point to a different registry:
+Add to your Cursor MCP settings (`.cursor/mcp.json`):
 
 ```json
 {
   "mcpServers": {
     "spm": {
-      "command": "spm-mcp",
+      "command": "npx",
+      "args": ["-y", "@skillpkg/mcp"]
+    }
+  }
+}
+```
+
+### Global Install (optional)
+
+If you prefer a global install instead of `npx`:
+
+```bash
+npm install -g @skillpkg/mcp
+```
+
+Then use `"command": "spm-mcp"` in your config instead.
+
+## Usage
+
+Once configured, ask your AI agent to search for skills:
+
+- "Search for PDF skills on SPM"
+- "What categories of skills are available?"
+- "Get info about the frontend-design skill"
+
+### Custom Registry URL
+
+To point to a different registry (e.g. local development):
+
+```json
+{
+  "mcpServers": {
+    "spm": {
+      "command": "npx",
+      "args": ["-y", "@skillpkg/mcp"],
       "env": {
         "SPM_REGISTRY_URL": "http://localhost:8787/api/v1"
       }
@@ -54,14 +106,6 @@ Set the `SPM_REGISTRY_URL` environment variable to point to a different registry
   }
 }
 ```
-
-## Usage
-
-Once configured, ask Claude to search for skills:
-
-- "Search for PDF skills on SPM"
-- "What categories of skills are available on SPM?"
-- "Get info about the frontend-design skill"
 
 ## Development
 

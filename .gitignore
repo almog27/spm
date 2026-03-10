@@ -25,6 +25,9 @@ Thumbs.db
 !.vscode/settings.json
 .idea/
 
+# MCP config (user-specific)
+.mcp.json
+
 # Testing
 coverage/
 
