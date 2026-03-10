@@ -8,6 +8,12 @@ const HF_MODEL_URL =
 const BLOCK_THRESHOLD = 0.95;
 const WARN_THRESHOLD = 0.7;
 
+// Skill files are inherently instructional text, which ML classifiers often
+// misclassify as prompt injection. This prefix provides context so the model
+// can distinguish authored skill definitions from actual injection attempts.
+const SKILL_CONTEXT_PREFIX =
+  'The following is an authored skill definition file published by a developer. It is expected to contain imperative instructions for an AI agent.\n\n';
+
 interface HFPrediction {
   label: string;
   score: number;
@@ -55,9 +61,11 @@ export const scanWithDeBERTa = async (
 
   for (const file of files) {
     // Truncate very long files to avoid API limits
-    const content = file.content.slice(0, 5000);
-    if (!content.trim()) continue;
+    const raw = file.content.slice(0, 5000);
+    if (!raw.trim()) continue;
 
+    // Prefix with skill context to reduce false positives on instructional text
+    const content = SKILL_CONTEXT_PREFIX + raw;
     const predictions = await classifyText(content, apiToken);
 
     const injection = predictions.find((p) => p.label === 'INJECTION');
@@ -73,7 +81,7 @@ export const scanWithDeBERTa = async (
         match: `DeBERTa confidence: ${injection.score.toFixed(4)}`,
         file: file.name,
         line: 0,
-        context: content.slice(0, 200),
+        context: raw.slice(0, 200),
       });
     } else if (injection.score >= WARN_THRESHOLD) {
       findings.push({
@@ -83,7 +91,7 @@ export const scanWithDeBERTa = async (
         match: `DeBERTa confidence: ${injection.score.toFixed(4)}`,
         file: file.name,
         line: 0,
-        context: content.slice(0, 200),
+        context: raw.slice(0, 200),
       });
     }
   }
