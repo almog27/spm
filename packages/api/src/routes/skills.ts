@@ -20,7 +20,7 @@ import {
   scans,
 } from '../db/schema.js';
 import { validateSkillName, checkNameSimilarity } from '../services/names.js';
-import { uploadPackage, uploadBundle } from '../services/r2.js';
+import { uploadPackage, uploadBundle, getObject } from '../services/r2.js';
 import { buildSearchCondition, buildRankExpression } from '../services/search.js';
 import { runSecurityPipeline } from '../services/scanner.js';
 import { extractTextFiles } from '../security/extract.js';
@@ -983,5 +983,229 @@ skillsRoutes.patch('/skills/:name', authed, zValidator('json', UpdateSkillSchema
     name,
     ...body,
     updated_at: now.toISOString(),
+  });
+});
+
+// ── POST /skills/:name/sign — attach sigstore signature to existing version ──
+
+skillsRoutes.post('/skills/:name/sign', authed, async (c) => {
+  const db = c.get('db');
+  const jwt = c.get('jwtPayload');
+  const userId = jwt.sub;
+  const name = c.req.param('name');
+
+  if (await isPlaceholderUser(db, userId)) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'Placeholder accounts cannot sign skills' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
+
+  const [skill] = await db.select().from(skills).where(eq(skills.name, name)).limit(1);
+
+  if (!skill) {
+    return c.json(createApiError('SKILL_NOT_FOUND'), ERROR_CODES.SKILL_NOT_FOUND.status);
+  }
+
+  // Owner or admin
+  const isAdmin = jwt.role === 'admin';
+  if (skill.ownerId !== userId && !isAdmin) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'You do not own this skill' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
+
+  const formData = await c.req.formData();
+  const versionStr = formData.get('version');
+  if (typeof versionStr !== 'string') {
+    return c.json(createApiError('VALIDATION_ERROR', { message: 'version is required' }), 400);
+  }
+
+  const bundleFile = formData.get('sigstore_bundle');
+  if (!(bundleFile instanceof File)) {
+    return c.json(
+      createApiError('VALIDATION_ERROR', { message: 'sigstore_bundle file is required' }),
+      400,
+    );
+  }
+
+  const [ver] = await db
+    .select({ id: versions.id, version: versions.version, sklStorageKey: versions.sklStorageKey })
+    .from(versions)
+    .where(and(eq(versions.skillId, skill.id), eq(versions.version, versionStr)))
+    .limit(1);
+
+  if (!ver) {
+    return c.json(createApiError('VERSION_NOT_FOUND'), ERROR_CODES.VERSION_NOT_FOUND.status);
+  }
+
+  const bundleData = await bundleFile.arrayBuffer();
+  const sigstoreBundleKey = await uploadBundle(c.env.R2_BUCKET, name, versionStr, bundleData);
+
+  const identity = formData.get('signer_identity');
+  const signerIdentity = typeof identity === 'string' ? identity : undefined;
+
+  await db
+    .update(versions)
+    .set({ sigstoreBundleKey, signerIdentity })
+    .where(eq(versions.id, ver.id));
+
+  return c.json({
+    name,
+    version: versionStr,
+    signed: true,
+    signer_identity: signerIdentity,
+    signed_at: new Date().toISOString(),
+  });
+});
+
+// ── POST /skills/:name/rescan — re-run security pipeline (owner or admin) ──
+
+const RescanSchema = z.object({
+  version: z.string().optional(),
+});
+
+skillsRoutes.post('/skills/:name/rescan', authed, zValidator('json', RescanSchema), async (c) => {
+  const db = c.get('db');
+  const jwt = c.get('jwtPayload');
+  const userId = jwt.sub;
+  const name = c.req.param('name');
+  const body = c.req.valid('json');
+
+  if (await isPlaceholderUser(db, userId)) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'Placeholder accounts cannot rescan skills' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
+
+  const [skill] = await db
+    .select({ id: skills.id, ownerId: skills.ownerId })
+    .from(skills)
+    .where(eq(skills.name, name))
+    .limit(1);
+
+  if (!skill) {
+    return c.json(createApiError('SKILL_NOT_FOUND'), ERROR_CODES.SKILL_NOT_FOUND.status);
+  }
+
+  // Owner or admin
+  const isAdmin = jwt.role === 'admin';
+  if (skill.ownerId !== userId && !isAdmin) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'You do not own this skill' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
+
+  const [ver] = body.version
+    ? await db
+        .select({
+          id: versions.id,
+          version: versions.version,
+          sklStorageKey: versions.sklStorageKey,
+        })
+        .from(versions)
+        .where(and(eq(versions.skillId, skill.id), eq(versions.version, body.version)))
+        .limit(1)
+    : await db
+        .select({
+          id: versions.id,
+          version: versions.version,
+          sklStorageKey: versions.sklStorageKey,
+        })
+        .from(versions)
+        .where(eq(versions.skillId, skill.id))
+        .orderBy(
+          desc(versions.versionMajor),
+          desc(versions.versionMinor),
+          desc(versions.versionPatch),
+        )
+        .limit(1);
+
+  if (!ver) {
+    return c.json(createApiError('VERSION_NOT_FOUND'), ERROR_CODES.VERSION_NOT_FOUND.status);
+  }
+
+  const obj = await getObject(c.env.R2_BUCKET, ver.sklStorageKey);
+  if (!obj) {
+    return c.json(
+      createApiError('SKILL_NOT_FOUND', { message: 'Package not found in storage' }),
+      404,
+    );
+  }
+
+  const packageData = await obj.arrayBuffer();
+  let textFiles: Array<{ name: string; content: string }>;
+  try {
+    textFiles = await extractTextFiles(packageData);
+  } catch {
+    textFiles = [];
+  }
+
+  const scanResult = await runSecurityPipeline(textFiles, {
+    hfApiToken: c.env.HF_API_TOKEN,
+    lakeraApiKey: c.env.LAKERA_API_KEY,
+  });
+
+  const dbStatusMap: Record<string, 'pending' | 'passed' | 'flagged' | 'blocked'> = {
+    passed: 'passed',
+    flagged: 'flagged',
+    blocked: 'blocked',
+    error: 'pending',
+    skipped: 'pending',
+  };
+
+  for (const layer of scanResult.layers) {
+    const dbStatus = dbStatusMap[layer.status] ?? 'pending';
+    const layerDetails = {
+      name: layer.name,
+      status: layer.status,
+      blocked: layer.blocked,
+      warnings: layer.warnings,
+      ...(layer.error ? { error: layer.error } : {}),
+    };
+
+    await db
+      .insert(scans)
+      .values({
+        versionId: ver.id,
+        layer: layer.layer,
+        status: dbStatus,
+        confidence: layer.confidence,
+        details: layerDetails,
+      })
+      .onConflictDoUpdate({
+        target: [scans.versionId, scans.layer],
+        set: {
+          status: dbStatus,
+          confidence: layer.confidence,
+          details: layerDetails,
+          scannedAt: new Date(),
+        },
+      });
+  }
+
+  await db
+    .update(skills)
+    .set({ scanSecurityLevel: scanResult.securityLevel, updatedAt: new Date() })
+    .where(eq(skills.id, skill.id));
+
+  return c.json({
+    name,
+    version: ver.version,
+    security_level: scanResult.securityLevel,
+    passed: scanResult.passed,
+    blocked: scanResult.blocked,
+    warnings: scanResult.warnings,
+    layers: scanResult.layers.map((l) => ({
+      layer: l.layer,
+      name: l.name,
+      status: l.status,
+      confidence: l.confidence,
+      ...(l.error ? { error: l.error } : {}),
+    })),
+    rescanned_at: new Date().toISOString(),
   });
 });
