@@ -37,5 +37,8 @@ skills/
 # Internal scripts (import, discovery tooling)
 scripts/
 
+# Working plan docs (local only)
+plan/open-issues.md
+
 # Logs
 *.log
