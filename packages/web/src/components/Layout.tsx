@@ -1,23 +1,18 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Nav } from './Nav';
-import { Footer } from './Footer';
+import { SidebarLayout } from '@spm/ui';
+import { AppSidebar } from './AppSidebar';
+import { AppTopBar } from './AppTopBar';
 
 export const Layout = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--color-bg)',
-        color: 'var(--color-text-primary)',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+    <SidebarLayout
+      sidebar={<AppSidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />}
+      topBar={<AppTopBar onMenuClick={() => setMobileOpen((v) => !v)} />}
     >
-      <Nav />
-      <main style={{ flex: 1 }}>
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+      <Outlet />
+    </SidebarLayout>
   );
 };

@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { Nav } from '../components/Nav';
+import { AppSidebar } from '../components/AppSidebar';
 import { useAuth } from '../context/AuthContext';
 
 vi.mock('../context/AuthContext', () => ({
@@ -9,10 +9,10 @@ vi.mock('../context/AuthContext', () => ({
 
 const mockedUseAuth = vi.mocked(useAuth);
 
-const renderNav = (props: { query?: string; onQueryChange?: (q: string) => void } = {}) =>
+const renderSidebar = () =>
   render(
     <MemoryRouter>
-      <Nav {...props} />
+      <AppSidebar />
     </MemoryRouter>,
   );
 
@@ -57,35 +57,43 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('Nav', () => {
-  it('renders spm logo linking to /', () => {
+describe('AppSidebar', () => {
+  it('renders spm logo', () => {
     mockedUseAuth.mockReturnValue(unauthenticatedState);
-    renderNav();
+    renderSidebar();
 
-    const logoLink = screen.getByText('spm').closest('a');
-    expect(logoLink).toHaveAttribute('href', '/');
+    expect(screen.getByText('spm')).toBeInTheDocument();
   });
 
-  it('shows search input with placeholder', () => {
+  it('renders Discover section with Home and Search', () => {
     mockedUseAuth.mockReturnValue(unauthenticatedState);
-    renderNav();
+    renderSidebar();
 
-    const input = screen.getByPlaceholderText('Search skills...');
-    expect(input).toBeInTheDocument();
+    expect(screen.getByText('Discover')).toBeInTheDocument();
+    expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByText('Search')).toBeInTheDocument();
   });
 
-  it('shows Sign in link when not authenticated', () => {
+  it('renders Docs section with Getting Started, CLI Reference, Publishing', () => {
     mockedUseAuth.mockReturnValue(unauthenticatedState);
-    renderNav();
+    renderSidebar();
 
-    const signInLink = screen.getByText('Sign in');
-    expect(signInLink).toBeInTheDocument();
-    expect(signInLink.closest('a')).toHaveAttribute('href', '/signin');
+    expect(screen.getByText('Docs')).toBeInTheDocument();
+    expect(screen.getByText('Getting Started')).toBeInTheDocument();
+    expect(screen.getByText('CLI Reference')).toBeInTheDocument();
+    expect(screen.getByText('Publishing')).toBeInTheDocument();
+  });
+
+  it('shows Sign in button when not authenticated', () => {
+    mockedUseAuth.mockReturnValue(unauthenticatedState);
+    renderSidebar();
+
+    expect(screen.getByText('Sign in')).toBeInTheDocument();
   });
 
   it('shows username and avatar when authenticated', () => {
     mockedUseAuth.mockReturnValue(authenticatedState);
-    renderNav();
+    renderSidebar();
 
     expect(screen.getByText('testuser')).toBeInTheDocument();
     const avatar = screen.getByAltText('testuser');
@@ -95,18 +103,23 @@ describe('Nav', () => {
 
   it('shows Dashboard link when authenticated', () => {
     mockedUseAuth.mockReturnValue(authenticatedState);
-    renderNav();
+    renderSidebar();
 
-    const dashboardLink = screen.getByText('Dashboard');
-    expect(dashboardLink).toBeInTheDocument();
-    expect(dashboardLink.closest('a')).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 
-  it('shows Admin link for admin users', () => {
-    mockedUseAuth.mockReturnValue(adminState);
-    renderNav();
+  it('shows My Account section when authenticated', () => {
+    mockedUseAuth.mockReturnValue(authenticatedState);
+    renderSidebar();
 
-    const adminLink = screen.getByText('Admin');
+    expect(screen.getByText('My Account')).toBeInTheDocument();
+  });
+
+  it('shows Admin Panel link for admin users', () => {
+    mockedUseAuth.mockReturnValue(adminState);
+    renderSidebar();
+
+    const adminLink = screen.getByText('Admin Panel');
     expect(adminLink).toBeInTheDocument();
     expect(adminLink.closest('a')).toHaveAttribute(
       'href',
@@ -114,21 +127,24 @@ describe('Nav', () => {
     );
   });
 
-  it('does not show Admin link for non-admin users', () => {
+  it('does not show Admin Panel link for non-admin users', () => {
     mockedUseAuth.mockReturnValue(authenticatedState);
-    renderNav();
+    renderSidebar();
 
-    expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Admin Panel')).not.toBeInTheDocument();
   });
 
-  it('calls onQueryChange when typing', () => {
+  it('does not show My Account section when not authenticated', () => {
     mockedUseAuth.mockReturnValue(unauthenticatedState);
-    const onQueryChange = vi.fn();
-    renderNav({ query: '', onQueryChange });
+    renderSidebar();
 
-    const input = screen.getByPlaceholderText('Search skills...');
-    fireEvent.change(input, { target: { value: 'pdf' } });
+    expect(screen.queryByText('My Account')).not.toBeInTheDocument();
+  });
 
-    expect(onQueryChange).toHaveBeenCalledWith('pdf');
+  it('shows Sign out button when authenticated', () => {
+    mockedUseAuth.mockReturnValue(authenticatedState);
+    renderSidebar();
+
+    expect(screen.getByText('Sign out')).toBeInTheDocument();
   });
 });
