@@ -54,12 +54,11 @@ export interface SkillSearchResultItem {
   name: string;
   version: string;
   description: string;
-  author: string;
-  trust_tier: string;
+  author: { username: string; trust_tier: string };
   signed: boolean;
   downloads: number;
-  rating: number;
-  review_count: number;
+  rating_avg: number;
+  rating_count: number;
   platforms: string[];
   categories: string[];
   updated_at: string;

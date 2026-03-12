@@ -11,12 +11,11 @@ interface SearchSkillResult {
   name: string;
   version: string;
   description: string;
-  author: string;
-  trust_tier: TrustTier;
+  author: { username: string; trust_tier: TrustTier };
   signed: boolean;
   downloads: number;
-  rating: number;
-  review_count: number;
+  rating_avg: number;
+  rating_count: number;
   platforms: string[];
   categories: string[];
   updated_at: string;
@@ -128,13 +127,13 @@ export const registerSearchCommand = (program: Command): void => {
         for (const skill of data.results) {
           const nameVersion = c.name(`${skill.name}@${skill.version}`);
           const downloads = c.dim(`\u2B07 ${formatDownloads(skill.downloads)}`);
-          const rating = formatRating(skill.rating, skill.review_count);
+          const rating = formatRating(skill.rating_avg, skill.rating_count);
 
           log(`  ${icons.package} ${nameVersion}  ${downloads}  ${rating}`);
           log(`     ${skill.description}`);
 
-          const authorPart = c.dim(`by @${skill.author}`);
-          const trustPart = formatTrustBadge(skill.trust_tier);
+          const authorPart = c.dim(`by @${skill.author.username}`);
+          const trustPart = formatTrustBadge(skill.author.trust_tier);
           const signedPart = formatSignedBadge(skill.signed);
           const parts = [authorPart, trustPart, signedPart].filter(Boolean);
           log(`     ${parts.join(c.dim(' \u00b7 '))}`);

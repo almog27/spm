@@ -397,6 +397,7 @@ skillsRoutes.post('/skills', authed, async (c) => {
 
 const SearchQuerySchema = z.object({
   q: z.string().optional(),
+  author: z.string().optional(),
   category: z.string().optional(),
   trust: z.string().optional(),
   platform: z.string().optional(),
@@ -412,11 +413,20 @@ const SearchQuerySchema = z.object({
 skillsRoutes.get('/skills', zValidator('query', SearchQuerySchema), async (c) => {
   const db = c.get('db');
   const params = c.req.valid('query');
-  const { q, category, trust, platform, security, sort, page, per_page } = params;
+  const { q, author, category, trust, platform, security, sort, page, per_page } = params;
   const offset = (page - 1) * per_page;
 
   // Build WHERE conditions — always exclude blocked skills from public search
   const conditions = [ne(skills.status, 'blocked')];
+
+  if (author) {
+    conditions.push(
+      sql`${skills.ownerId} IN (
+        SELECT ${users.id} FROM ${users}
+        WHERE ${users.username} = ${author}
+      )`,
+    );
+  }
 
   if (q) {
     // Use GIN full-text search with tag matching fallback
