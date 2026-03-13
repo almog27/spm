@@ -17,16 +17,44 @@ export const SkillHero = ({ skill }: { skill: SkillFull }) => (
       marginBottom: 24,
     }}
   >
-    <div style={{ flex: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-        <Text
-          variant="h1"
-          font="mono"
-          as="h1"
-          style={{ fontSize: 26, color: 'var(--color-cyan)', margin: 0 }}
-        >
-          {skill.name}
-        </Text>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <Text
+        variant="h1"
+        font="mono"
+        as="h1"
+        style={{
+          fontSize: 26,
+          color: 'var(--color-cyan)',
+          margin: 0,
+          marginBottom: 4,
+          wordBreak: 'break-word',
+        }}
+      >
+        {skill.name}
+      </Text>
+      <Text variant="body-sm" color="primary" as="div" style={{ marginBottom: 8 }}>
+        <span style={{ color: 'var(--color-text-faint)' }}>by </span>
+        {skill.authors.map((a, i) => (
+          <span key={a.username}>
+            {i > 0 && ', '}
+            <Link
+              to={`/authors/${a.username}`}
+              style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}
+            >
+              @{a.username}
+            </Link>
+          </span>
+        ))}
+      </Text>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          marginBottom: 10,
+          flexWrap: 'wrap',
+        }}
+      >
         <Text variant="h4" font="mono" color="accent" as="span">
           v{skill.version}
         </Text>
@@ -43,20 +71,6 @@ export const SkillHero = ({ skill }: { skill: SkillFull }) => (
           </a>
         )}
       </div>
-      <Text variant="body-sm" color="primary" as="div" style={{ marginBottom: 8 }}>
-        <span style={{ color: 'var(--color-text-faint)' }}>by </span>
-        {skill.authors.map((a, i) => (
-          <span key={a.username}>
-            {i > 0 && ', '}
-            <Link
-              to={`/authors/${a.username}`}
-              style={{ color: 'var(--color-text-secondary)', textDecoration: 'none' }}
-            >
-              @{a.username}
-            </Link>
-          </span>
-        ))}
-      </Text>
       <Text
         variant="h4"
         font="sans"
