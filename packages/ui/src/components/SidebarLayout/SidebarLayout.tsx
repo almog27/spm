@@ -27,6 +27,7 @@ export const SidebarLayout = ({
   >
     {sidebar}
     <div
+      className="spm-main-content"
       style={{
         flex: 1,
         marginLeft: sidebarWidth,

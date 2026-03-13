@@ -74,7 +74,10 @@ export const Home = () => {
         onSubmit={handleSubmit}
       />
 
-      <section style={{ maxWidth: 920, margin: '0 auto', padding: '0 32px 60px' }}>
+      <section
+        className="spm-page-wrap"
+        style={{ maxWidth: 920, margin: '0 auto', padding: '0 32px 60px' }}
+      >
         <TrendingTabs
           trendingTab={trendingTab as TrendingTab}
           setTrendingTab={setTrendingTab}

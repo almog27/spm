@@ -64,6 +64,7 @@ export const HeroSearch = ({
 
   return (
     <section
+      className="spm-hero"
       style={{
         paddingTop: 40,
         paddingBottom: 32,

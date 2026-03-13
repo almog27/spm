@@ -5,6 +5,7 @@ import { type SkillFull } from './types';
 
 export const SkillHero = ({ skill }: { skill: SkillFull }) => (
   <div
+    className="spm-skill-hero"
     style={{
       display: 'flex',
       justifyContent: 'space-between',
@@ -110,6 +111,7 @@ export const SkillHero = ({ skill }: { skill: SkillFull }) => (
 
     {/* Install box */}
     <div
+      className="spm-skill-hero-install"
       style={{
         background: 'var(--color-bg)',
         border: '1px solid var(--color-border-default)',

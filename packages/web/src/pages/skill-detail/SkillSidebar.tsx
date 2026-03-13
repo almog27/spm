@@ -24,7 +24,7 @@ export const SkillSidebar = ({ skill }: { skill: SkillFull }) => {
   const sparklineData = downloadsData ? buildSparklineData(downloadsData.days) : null;
 
   return (
-    <aside style={{ width: 220, flexShrink: 0 }}>
+    <aside className="spm-skill-sidebar" style={{ width: 220, flexShrink: 0 }}>
       <div style={{ position: 'sticky', top: 70 }}>
         {/* Stats */}
         <div style={cardStyle}>

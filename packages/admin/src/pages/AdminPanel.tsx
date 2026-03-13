@@ -38,7 +38,10 @@ export const AdminPanel = () => {
       sidebar={<AdminSidebar activeTab={tab} onTabChange={handleTabChange} />}
       topBar={<AdminTopBar activeTab={tab} onNavigateHome={() => handleTabChange('overview')} />}
     >
-      <div style={{ maxWidth: 1040, margin: '0 auto', padding: '24px 32px 60px' }}>
+      <div
+        className="spm-page-wrap"
+        style={{ maxWidth: 1040, margin: '0 auto', padding: '24px 32px 60px' }}
+      >
         {tab === 'overview' && <OverviewTab />}
         {tab === 'flagged' && <FlaggedQueue />}
         {tab === 'skills' && <SkillModeration />}

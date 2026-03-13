@@ -49,11 +49,14 @@ export const SkillDetail = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1060, margin: '0 auto', padding: '0 32px 60px' }}>
+    <div
+      className="spm-page-wrap"
+      style={{ maxWidth: 1060, margin: '0 auto', padding: '0 32px 60px' }}
+    >
       <SkillHero skill={skill} />
 
       {/* Content: tabs + sidebar */}
-      <div style={{ display: 'flex', gap: 24 }}>
+      <div className="spm-skill-layout" style={{ display: 'flex', gap: 24 }}>
         {/* Main content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Tabs */}

@@ -87,9 +87,13 @@ export const Dashboard = () => {
       })) ?? [];
 
   return (
-    <div style={{ maxWidth: 980, margin: '0 auto', padding: '28px 32px 64px' }}>
+    <div
+      className="spm-page-wrap"
+      style={{ maxWidth: 980, margin: '0 auto', padding: '28px 32px 64px' }}
+    >
       {/* Header */}
       <div
+        className="spm-dash-header"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -142,7 +146,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Stat cards */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+      <div className="spm-stat-row" style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         <StatBox
           label="Total downloads"
           value={`${(authorStats.totalDownloads / 1000).toFixed(1)}k`}
