@@ -46,36 +46,25 @@ export const SkillCard = ({ skill, rank }: { skill: SkillSummary; rank: number }
           }}
         />
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: 8,
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-              <Text
-                variant="h3"
-                font="mono"
-                weight={600}
-                as="span"
-                style={{ color: 'var(--color-cyan)' }}
-              >
-                {skill.name}
-              </Text>
-              <Text variant="caption" font="mono" color="faint" as="span">
-                v{skill.version}
-              </Text>
-            </div>
+        <div style={{ marginBottom: 8 }}>
+          <Text
+            variant="h3"
+            font="mono"
+            weight={600}
+            as="div"
+            style={{ color: 'var(--color-cyan)', marginBottom: 4, wordBreak: 'break-word' }}
+          >
+            {skill.name}
+          </Text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <Text variant="caption" font="mono" color="faint" as="span">
+              v{skill.version}
+            </Text>
+            <TrustBadge tier={skill.trust} />
+            {skill.securityLevel && <SecurityBadge level={skill.securityLevel} showLabel={false} />}
             <Text variant="caption" font="sans" color="muted" as="span">
               by @{skill.author}
             </Text>
-          </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <TrustBadge tier={skill.trust} />
-            {skill.securityLevel && <SecurityBadge level={skill.securityLevel} showLabel={false} />}
           </div>
         </div>
 
