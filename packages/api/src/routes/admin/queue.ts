@@ -21,14 +21,10 @@ queueRoutes.get('/admin/queue', zValidator('query', QueueQuerySchema), async (c)
   const { sort, status } = c.req.valid('query');
 
   try {
-    const conditions = [];
-    if (status === 'pending') {
-      conditions.push(eq(scans.status, 'flagged'));
-    } else {
-      conditions.push(sql`${scans.status} IN ('flagged', 'manual_approved', 'blocked')`);
-    }
-
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const statusFilter =
+      status === 'pending'
+        ? eq(scans.status, 'flagged')
+        : sql`${scans.status} IN ('flagged', 'manual_approved', 'blocked')`;
 
     let orderBy;
     switch (sort) {
@@ -44,84 +40,57 @@ queueRoutes.get('/admin/queue', zValidator('query', QueueQuerySchema), async (c)
         break;
     }
 
-    const scanRows = await db
+    // Single JOIN query instead of N+1
+    const rows = await db
       .select({
         scanId: scans.id,
-        versionId: scans.versionId,
         layer: scans.layer,
-        status: scans.status,
+        scanStatus: scans.status,
         confidence: scans.confidence,
-        details: scans.details,
         scannedAt: scans.scannedAt,
+        version: versions.version,
+        sizeBytes: versions.sizeBytes,
+        skillName: skills.name,
+        username: users.username,
+        trustTier: users.trustTier,
       })
       .from(scans)
-      .where(whereClause)
+      .innerJoin(versions, eq(versions.id, scans.versionId))
+      .innerJoin(skills, eq(skills.id, versions.skillId))
+      .innerJoin(users, eq(users.id, skills.ownerId))
+      .where(statusFilter)
       .orderBy(orderBy);
 
-    // Enrich with skill + version + author info
-    const queue = await Promise.all(
-      scanRows.map(async (scan) => {
-        const [ver] = await db
-          .select({
-            version: versions.version,
-            skillId: versions.skillId,
-            sizeBytes: versions.sizeBytes,
-            publishedAt: versions.publishedAt,
-          })
-          .from(versions)
-          .where(eq(versions.id, scan.versionId))
-          .limit(1);
+    const queue = rows.map((row) => {
+      const scannedAt = row.scannedAt;
+      const submittedAt =
+        scannedAt instanceof Date
+          ? scannedAt.toISOString()
+          : String(scannedAt ?? new Date().toISOString());
 
-        if (!ver) return null;
-
-        const [skill] = await db
-          .select({ name: skills.name, ownerId: skills.ownerId })
-          .from(skills)
-          .where(eq(skills.id, ver.skillId))
-          .limit(1);
-
-        if (!skill) return null;
-
-        const [author] = await db
-          .select({ username: users.username, trustTier: users.trustTier })
-          .from(users)
-          .where(eq(users.id, skill.ownerId))
-          .limit(1);
-
-        const scannedAt = scan.scannedAt;
-        const submittedAt =
-          scannedAt instanceof Date
-            ? scannedAt.toISOString()
-            : typeof scannedAt === 'string'
-              ? scannedAt
-              : new Date().toISOString();
-
-        return {
-          id: scan.scanId,
-          skill: skill.name,
-          version: ver.version,
-          author: {
-            username: author?.username ?? 'unknown',
-            trust_tier: author?.trustTier ?? 'registered',
+      return {
+        id: row.scanId,
+        skill: row.skillName,
+        version: row.version,
+        author: {
+          username: row.username ?? 'unknown',
+          trust_tier: row.trustTier ?? 'registered',
+        },
+        flags: [
+          {
+            layer: row.layer,
+            type: row.scanStatus,
+            confidence: row.confidence,
           },
-          flags: [
-            {
-              layer: scan.layer,
-              type: scan.status,
-              confidence: scan.confidence,
-            },
-          ],
-          submitted_at: submittedAt,
-          size_bytes: ver.sizeBytes,
-        };
-      }),
-    );
-
-    const filtered = queue.filter(Boolean);
+        ],
+        submitted_at: submittedAt,
+        size_bytes: row.sizeBytes,
+      };
+    });
 
     return c.json({
-      queue: filtered,
-      total: filtered.length,
+      queue,
+      total: queue.length,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';

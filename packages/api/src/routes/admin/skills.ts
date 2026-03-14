@@ -27,64 +27,51 @@ skillsRoutes.get('/admin/skills', zValidator('query', AdminSkillsQuerySchema), a
   try {
     const [totalRow] = await db.select({ total: count() }).from(skills);
 
+    // Single JOIN query with correlated subqueries — avoids N+1 subrequest limit
     const rows = await db
       .select({
-        id: skills.id,
         name: skills.name,
         description: skills.description,
         categories: skills.categories,
         deprecated: skills.deprecated,
-        ownerId: skills.ownerId,
         createdAt: skills.createdAt,
         updatedAt: skills.updatedAt,
+        username: users.username,
+        trustTier: users.trustTier,
+        latestVersion: sql<string | null>`(
+          SELECT v.version FROM versions v
+          WHERE v.skill_id = ${skills.id}
+          ORDER BY v.published_at DESC LIMIT 1
+        )`,
+        scanStatus: sql<string | null>`(
+          SELECT s.status::text FROM scans s
+          JOIN versions v ON v.id = s.version_id
+          WHERE v.skill_id = ${skills.id}
+          ORDER BY v.published_at DESC, s.scanned_at DESC LIMIT 1
+        )`,
       })
       .from(skills)
+      .innerJoin(users, eq(users.id, skills.ownerId))
       .orderBy(desc(skills.updatedAt))
       .limit(per_page)
       .offset(offset);
 
-    const results = await Promise.all(
-      rows.map(async (row) => {
-        const [author] = await db
-          .select({ username: users.username, trustTier: users.trustTier })
-          .from(users)
-          .where(eq(users.id, row.ownerId))
-          .limit(1);
-
-        const [latestVersion] = await db
-          .select({ version: versions.version, id: versions.id })
-          .from(versions)
-          .where(eq(versions.skillId, row.id))
-          .orderBy(desc(versions.publishedAt))
-          .limit(1);
-
-        let scanStatus: string | null = null;
-        if (latestVersion) {
-          const [scanRow] = await db
-            .select({ status: scans.status })
-            .from(scans)
-            .where(eq(scans.versionId, latestVersion.id))
-            .limit(1);
-          scanStatus = scanRow?.status ?? null;
-        }
-
-        const createdAt = row.createdAt;
-        const updatedAt = row.updatedAt;
-
-        return {
-          name: row.name,
-          description: row.description,
-          categories: row.categories,
-          deprecated: row.deprecated,
-          author: author?.username ?? 'unknown',
-          trust_tier: author?.trustTier ?? 'registered',
-          latest_version: latestVersion?.version ?? null,
-          scan_status: scanStatus,
-          created_at: createdAt instanceof Date ? createdAt.toISOString() : String(createdAt ?? ''),
-          updated_at: updatedAt instanceof Date ? updatedAt.toISOString() : String(updatedAt ?? ''),
-        };
-      }),
-    );
+    const results = rows.map((row) => {
+      const createdAt = row.createdAt;
+      const updatedAt = row.updatedAt;
+      return {
+        name: row.name,
+        description: row.description,
+        categories: row.categories,
+        deprecated: row.deprecated,
+        author: row.username ?? 'unknown',
+        trust_tier: row.trustTier ?? 'registered',
+        latest_version: row.latestVersion ?? null,
+        scan_status: row.scanStatus ?? null,
+        created_at: createdAt instanceof Date ? createdAt.toISOString() : String(createdAt ?? ''),
+        updated_at: updatedAt instanceof Date ? updatedAt.toISOString() : String(updatedAt ?? ''),
+      };
+    });
 
     return c.json({
       results,
