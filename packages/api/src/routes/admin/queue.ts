@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import { eq, desc, asc, sql } from 'drizzle-orm';
 import { createApiError } from '@spm/shared';
 import type { AppEnv } from '../../types.js';
 import { skills, versions, users, scans } from '../../db/schema.js';

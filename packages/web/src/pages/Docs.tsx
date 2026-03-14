@@ -7,10 +7,19 @@ const sections = [
     items: [
       {
         label: 'What is SPM?',
+        slug: 'what-is-spm',
         desc: 'An overview of the Skills Package Manager and how it works with AI agents.',
       },
-      { label: 'Installation', desc: 'Install the CLI globally and configure your environment.' },
-      { label: 'Your first skill', desc: 'Create, test, and publish a skill in under 5 minutes.' },
+      {
+        label: 'Installation',
+        slug: 'installation',
+        desc: 'Install the CLI globally and configure your environment.',
+      },
+      {
+        label: 'Your first skill',
+        slug: 'your-first-skill',
+        desc: 'Create, test, and publish a skill in under 5 minutes.',
+      },
     ],
   },
   {
@@ -18,14 +27,20 @@ const sections = [
     items: [
       {
         label: 'Skills',
+        slug: 'skills',
         desc: "What skills are, how they're structured, and the SKILL.md manifest format.",
       },
-      { label: 'Trust tiers', desc: 'How the trust system works — from unverified to official.' },
+      {
+        label: 'Trust tiers',
+        slug: 'trust-tiers',
+        desc: 'How the trust system works — from unverified to official.',
+      },
       {
         label: 'Content security',
+        slug: 'content-security',
         desc: 'The 3-layer scanning pipeline that protects the registry.',
       },
-      { label: 'Categories', desc: 'Browse and organize skills by category.' },
+      { label: 'Categories', slug: 'categories', desc: 'Browse and organize skills by category.' },
     ],
   },
   {
@@ -33,17 +48,24 @@ const sections = [
     items: [
       {
         label: 'Publishing skills',
+        slug: 'publishing-skills',
         desc: 'Step-by-step guide to publishing and versioning your skills.',
       },
       {
         label: 'Installing skills',
+        slug: 'installing-skills',
         desc: 'Install skills globally or per-project, pin versions, and manage dependencies.',
       },
       {
         label: 'Authoring best practices',
+        slug: 'authoring-best-practices',
         desc: 'Write skills that are secure, discoverable, and well-documented.',
       },
-      { label: 'Agent integration', desc: 'How agents discover and use skills from the registry.' },
+      {
+        label: 'Agent integration',
+        slug: 'agent-integration',
+        desc: 'How agents discover and use skills from the registry.',
+      },
     ],
   },
 ];
@@ -82,15 +104,24 @@ export const Docs = () => (
         </Text>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {section.items.map((item) => (
-            <div
+            <Link
               key={item.label}
+              to={`/docs/${item.slug}`}
               style={{
                 padding: '14px 18px',
                 background: 'var(--color-bg-card)',
                 border: '1px solid var(--color-border-default)',
                 borderRadius: 10,
-                cursor: 'pointer',
+                textDecoration: 'none',
+                display: 'block',
+                transition: 'border-color 0.15s',
               }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.borderColor = 'var(--color-border-hover)')
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.borderColor = 'var(--color-border-default)')
+              }
             >
               <Text
                 variant="body"
@@ -111,7 +142,7 @@ export const Docs = () => (
               >
                 {item.desc}
               </Text>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

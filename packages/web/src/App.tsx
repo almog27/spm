@@ -11,6 +11,7 @@ import { AuthorProfile } from './pages/AuthorProfile';
 import { Dashboard } from './pages/dashboard';
 import { SignIn } from './pages/SignIn';
 import { Docs } from './pages/Docs';
+import { DocDetail } from './pages/DocDetail';
 import { CLI } from './pages/CLI';
 import { Publish } from './pages/Publish';
 
@@ -35,6 +36,7 @@ export const App = () => {
               />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/docs" element={<Docs />} />
+              <Route path="/docs/:slug" element={<DocDetail />} />
               <Route path="/cli" element={<CLI />} />
               <Route path="/publish" element={<Publish />} />
             </Route>
