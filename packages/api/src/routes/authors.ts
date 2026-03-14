@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { eq, and, desc, sql, count, ilike } from 'drizzle-orm';
+import { eq, and, desc, sql, count, ilike, type SQL } from 'drizzle-orm';
 import { ERROR_CODES, createApiError } from '@spm/shared';
 import type { AppEnv } from '../types.js';
 import { authed } from '../middleware/auth.js';
@@ -26,13 +26,13 @@ authorsRoutes.get('/authors', zValidator('query', AuthorsQuerySchema), async (c)
     .select({
       username: users.username,
       trustTier: users.trustTier,
-      skillCount: sql<number>`(
-        SELECT count(*)::int FROM skills s WHERE s.owner_id = ${users.id}
-      )`,
+      skillCount: count(skills.id),
     })
     .from(users)
+    .leftJoin(skills, eq(skills.ownerId, users.id))
     .where(conditions)
-    .orderBy(sql`(SELECT count(*) FROM skills s WHERE s.owner_id = ${users.id}) DESC`)
+    .groupBy(users.id, users.username, users.trustTier)
+    .orderBy(desc(count(skills.id)))
     .limit(per_page);
 
   return c.json({
