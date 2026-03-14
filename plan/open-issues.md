@@ -308,7 +308,8 @@ Buttons on the docs/landing pages (e.g. "Get Started", "View Docs", CTAs) are no
 - `spm install github:owner/repo/skill-name` syntax
 - Install skills directly from GitHub without registry entry
 
-### Documentation
+### ~~Documentation~~ DONE
 
-- Improve root `README.md` (getting started, feature highlights)
-- Add package-level READMEs (`packages/admin/`, `packages/ui/`, `packages/web-auth/`)
+- ~~Improve root `README.md` (getting started, feature highlights)~~
+- ~~Add package-level READMEs (`packages/admin/`, `packages/ui/`, `packages/web-auth/`)~~
+- All 8 packages now have READMEs. Root README expanded with quick start, create/publish, MCP setup, full project structure, and dev commands.
