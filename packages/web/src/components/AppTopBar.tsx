@@ -7,7 +7,7 @@ import {
   type LegacyBreadcrumbItem as BreadcrumbItem,
 } from '@spm/ui/shadcn';
 import { docSlugToLabel } from '../data/docSections';
-import { searchAuthors } from '../lib/api';
+import { searchAuthors, getCategories } from '../lib/api';
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Home',
@@ -59,10 +59,13 @@ const TopBarSearch = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Detect author: prefix
+  // Detect author: or category: prefix
   const authorMatch = query.match(/^author:(\S*)$/i);
+  const categoryMatch = query.match(/^category:(\S*)$/i);
   const authorPrefix = authorMatch?.[1] ?? '';
+  const categoryPrefix = categoryMatch?.[1] ?? '';
   const isAuthorMode = !!authorMatch;
+  const isCategoryMode = !!categoryMatch;
 
   // Debounce the author prefix
   useEffect(() => {
@@ -80,8 +83,21 @@ const TopBarSearch = () => {
     enabled: isAuthorMode && debouncedPrefix.length >= 1,
   });
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+    enabled: isCategoryMode,
+    staleTime: 60_000,
+  });
+  const filteredCategories = isCategoryMode
+    ? (categoriesData?.categories ?? []).filter((c) =>
+        c.slug.toLowerCase().startsWith(categoryPrefix.toLowerCase()),
+      )
+    : [];
+
   const authorResults = authorData?.authors ?? [];
   const showAuthorDropdown = focused && isAuthorMode && authorPrefix.length >= 1;
+  const showCategoryDropdown = focused && isCategoryMode;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +121,11 @@ const TopBarSearch = () => {
           alignItems: 'center',
           background: 'var(--color-bg-input)',
           border: '1px solid var(--color-border-default)',
-          borderRadius: showAuthorDropdown && authorResults.length > 0 ? '8px 8px 0 0' : 8,
+          borderRadius:
+            (showAuthorDropdown && authorResults.length > 0) ||
+            (showCategoryDropdown && filteredCategories.length > 0)
+              ? '8px 8px 0 0'
+              : 8,
           padding: '0 12px',
         }}
       >
@@ -201,6 +221,66 @@ const TopBarSearch = () => {
               </div>
               <Text variant="label" font="mono" color="muted" as="span">
                 {author.skill_count} skill{author.skill_count !== 1 ? 's' : ''}
+              </Text>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Category autocomplete dropdown */}
+      {showCategoryDropdown && filteredCategories.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-default)',
+            borderTop: 'none',
+            borderRadius: '0 0 8px 8px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            zIndex: 50,
+            overflow: 'hidden',
+          }}
+        >
+          {filteredCategories.map((cat) => (
+            <div
+              key={cat.slug}
+              style={{
+                padding: '8px 12px',
+                borderBottom: '1px solid #1a1d2744',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                navigate(`/search?category=${encodeURIComponent(cat.slug)}`);
+                setQuery('');
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = 'rgba(16,185,129,0.04)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 14 }}>{cat.icon}</span>
+                <Text
+                  variant="body-sm"
+                  font="mono"
+                  weight={600}
+                  as="span"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {cat.display}
+                </Text>
+              </div>
+              <Text variant="label" font="mono" color="muted" as="span">
+                {cat.count} skill{cat.count !== 1 ? 's' : ''}
               </Text>
             </div>
           ))}

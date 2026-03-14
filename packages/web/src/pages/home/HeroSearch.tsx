@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { type SearchResultItem, searchAuthors } from '../../lib/api';
+import { type SearchResultItem, searchAuthors, getCategories } from '../../lib/api';
 import { searchSkillsQuery } from '../search/queries';
 import { TrustBadge, Text, type TrustTier } from '@spm/ui';
 
@@ -37,15 +37,19 @@ export const HeroSearch = ({
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Detect author: prefix
+  // Detect author: or category: prefix
   const authorMatch = debouncedQuery.match(/^author:(\S*)$/i);
+  const categoryMatch = debouncedQuery.match(/^category:(\S*)$/i);
   const authorPrefix = authorMatch?.[1] ?? '';
+  const categoryPrefix = categoryMatch?.[1] ?? '';
   const isAuthorMode = !!authorMatch;
+  const isCategoryMode = !!categoryMatch;
+  const isPrefixMode = isAuthorMode || isCategoryMode;
 
   // API-backed skill search
   const { data: searchData, isFetching: isFetchingSkills } = useQuery({
     ...searchSkillsQuery(debouncedQuery ? { q: debouncedQuery, per_page: 6 } : { per_page: 0 }),
-    enabled: debouncedQuery.length >= 2 && !isAuthorMode,
+    enabled: debouncedQuery.length >= 2 && !isPrefixMode,
   });
 
   // API-backed author search
@@ -55,12 +59,26 @@ export const HeroSearch = ({
     enabled: isAuthorMode && authorPrefix.length >= 1,
   });
 
+  // Categories (cached, filtered client-side)
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: getCategories,
+    enabled: isCategoryMode,
+    staleTime: 60_000,
+  });
+  const filteredCategories = isCategoryMode
+    ? (categoriesData?.categories ?? []).filter((c) =>
+        c.slug.toLowerCase().startsWith(categoryPrefix.toLowerCase()),
+      )
+    : [];
+
   const results: SearchResultItem[] = searchData?.results ?? [];
   const totalResults = searchData?.total ?? 0;
   const authorResults = authorData?.authors ?? [];
   const isFetching = isFetchingSkills || isFetchingAuthors;
   const showDropdown = focused && debouncedQuery.length >= 2;
   const showAuthorDropdown = focused && isAuthorMode && authorPrefix.length >= 1;
+  const showCategoryDropdown = focused && isCategoryMode;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -169,7 +187,12 @@ export const HeroSearch = ({
               display: 'flex',
               alignItems: 'center',
               background: 'var(--color-bg-card)',
-              borderRadius: showDropdown && results.length > 0 ? '10px 10px 0 0' : 10,
+              borderRadius:
+                (showDropdown && !isPrefixMode && results.length > 0) ||
+                (showAuthorDropdown && authorResults.length > 0) ||
+                (showCategoryDropdown && filteredCategories.length > 0)
+                  ? '10px 10px 0 0'
+                  : 10,
               padding: '0 16px',
               border: `1.5px solid ${focused ? '#10b981' : '#1e293b'}`,
               borderBottom:
@@ -321,8 +344,86 @@ export const HeroSearch = ({
             </div>
           )}
 
+        {/* Category autocomplete dropdown */}
+        {showCategoryDropdown && (
+          <div
+            ref={dropdownRef}
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: 'var(--color-bg-card)',
+              border: '1.5px solid #10b981',
+              borderTop: 'none',
+              borderRadius: '0 0 10px 10px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+              zIndex: 50,
+              overflow: 'hidden',
+            }}
+          >
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((cat) => (
+                <div
+                  key={cat.slug}
+                  style={{
+                    padding: '10px 16px',
+                    borderBottom: '1px solid #1a1d2744',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    navigate(`/search?category=${encodeURIComponent(cat.slug)}`);
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLDivElement).style.background = 'rgba(16,185,129,0.04)';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>{cat.icon}</span>
+                    <Text
+                      variant="body"
+                      font="mono"
+                      weight={600}
+                      as="span"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {cat.display}
+                    </Text>
+                  </div>
+                  <Text
+                    variant="label"
+                    font="mono"
+                    color="muted"
+                    as="span"
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    {cat.count} skill{cat.count !== 1 ? 's' : ''}
+                  </Text>
+                </div>
+              ))
+            ) : (
+              <Text
+                variant="body-sm"
+                font="sans"
+                color="muted"
+                as="div"
+                style={{ padding: '16px', textAlign: 'center' }}
+              >
+                No categories matching &quot;{categoryPrefix}&quot;
+              </Text>
+            )}
+          </div>
+        )}
+
         {/* Live search dropdown */}
-        {!isAuthorMode &&
+        {!isPrefixMode &&
           showDropdown &&
           (results.length > 0 || (!isFetching && debouncedQuery.length >= 2)) && (
             <div
