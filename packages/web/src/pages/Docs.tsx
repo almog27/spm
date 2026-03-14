@@ -173,7 +173,7 @@ export const Docs = () => (
         </Link>{' '}
         or open an issue on{' '}
         <a
-          href="https://github.com/almog27/spm/issues"
+          href="https://github.com/skillpkg/spm/issues"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--color-accent)', textDecoration: 'none' }}

@@ -7,7 +7,7 @@
   "author": "almog27",
   "repository": {
     "type": "git",
-    "url": "https://github.com/almog27/spm",
+    "url": "https://github.com/skillpkg/spm",
     "directory": "packages/cli"
   },
   "homepage": "https://skillpkg.dev",

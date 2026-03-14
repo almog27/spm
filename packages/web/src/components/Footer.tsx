@@ -73,7 +73,7 @@ export const Footer = () => {
           Contact
         </a>
         <a
-          href="https://github.com/almog27/spm"
+          href="https://github.com/skillpkg/spm"
           target="_blank"
           rel="noopener noreferrer"
           style={{
