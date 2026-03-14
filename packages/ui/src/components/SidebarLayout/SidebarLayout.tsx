@@ -34,6 +34,8 @@ export const SidebarLayout = ({
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
+        minWidth: 0,
+        overflowX: 'hidden',
       }}
     >
       {topBar}
