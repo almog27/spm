@@ -49,3 +49,31 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ui:
+              - 'packages/web/**'
+              - 'packages/ui/**'
+              - 'packages/admin/**'
+      - if: steps.changes.outputs.ui == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - if: steps.changes.outputs.ui == 'true'
+        uses: pnpm/action-setup@v4
+      - if: steps.changes.outputs.ui == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.changes.outputs.ui == 'true'
+        run: npx playwright install chromium
+      - if: steps.changes.outputs.ui == 'true'
+        run: pnpm build
+      - if: steps.changes.outputs.ui == 'true'
+        run: pnpm --filter @spm/web test:e2e
