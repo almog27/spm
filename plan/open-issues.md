@@ -196,12 +196,13 @@ Endpoints (`POST /admin/skills/:name/block` and `/unblock`) and admin UI with co
 
 DB schema, API response (`authors[]` on `GET /skills/:name`), web sidebar, and admin detail pane all implemented.
 
-### Remaining (future): Collaborator Management
+### ~~Collaborator Management~~ DONE
 
-- `POST/DELETE /skills/:name/collaborators` API endpoints
-- Dashboard UI for managing collaborators
-- CLI: `spm collaborators add/remove/list`
-- `/authors/:username` should include collaborated skills, not just owned
+- ~~`POST/DELETE /skills/:name/collaborators` API endpoints~~
+- ~~CLI: `spm collaborators add/remove/list`~~
+- ~~Collaborators can publish new versions (ownership check updated)~~
+- Dashboard UI for managing collaborators (future — dashboard uses mock data)
+- `/authors/:username` should include collaborated skills, not just owned (future)
 
 ---
 

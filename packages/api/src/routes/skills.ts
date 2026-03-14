@@ -216,12 +216,15 @@ skillsRoutes.post('/skills', authed, async (c) => {
   let skillId: string;
 
   if (existingSkill) {
-    // Verify ownership (admins with X-Publish-As can transfer ownership)
+    // Verify ownership or collaborator status (admins with X-Publish-As can transfer ownership)
     if (existingSkill.ownerId !== userId && !publishAs) {
-      return c.json(
-        createApiError('FORBIDDEN', { message: 'You do not own this skill' }),
-        ERROR_CODES.FORBIDDEN.status,
-      );
+      const { allowed } = await isOwnerOrCollaborator(db, existingSkill.id, userId);
+      if (!allowed) {
+        return c.json(
+          createApiError('FORBIDDEN', { message: 'You do not own this skill' }),
+          ERROR_CODES.FORBIDDEN.status,
+        );
+      }
     }
     skillId = existingSkill.id;
 
@@ -1310,4 +1313,214 @@ skillsRoutes.post('/skills/:name/rescan', authed, zValidator('json', RescanSchem
     })),
     rescanned_at: new Date().toISOString(),
   });
+});
+
+// ── Collaborator Management ──
+
+const CollaboratorSchema = z.object({
+  username: z.string().min(1),
+  role: z.enum(['collaborator']).optional().default('collaborator'),
+});
+
+// Helper: check if user is owner or collaborator of a skill
+const isOwnerOrCollaborator = async (
+  db: Database,
+  skillId: string,
+  userId: string,
+): Promise<{ allowed: boolean; role: string | null }> => {
+  const [row] = await db
+    .select({ role: skillCollaborators.role })
+    .from(skillCollaborators)
+    .where(and(eq(skillCollaborators.skillId, skillId), eq(skillCollaborators.userId, userId)))
+    .limit(1);
+  return { allowed: !!row, role: row?.role ?? null };
+};
+
+// GET /skills/:name/collaborators — list collaborators
+skillsRoutes.get('/skills/:name/collaborators', async (c) => {
+  const db = c.get('db');
+  const name = c.req.param('name');
+
+  const [skill] = await db
+    .select({ id: skills.id })
+    .from(skills)
+    .where(eq(skills.name, name))
+    .limit(1);
+  if (!skill) {
+    return c.json(
+      createApiError('SKILL_NOT_FOUND', { message: 'Skill not found' }),
+      ERROR_CODES.SKILL_NOT_FOUND.status,
+    );
+  }
+
+  const rows = await db
+    .select({
+      username: users.username,
+      githubLogin: users.githubLogin,
+      trustTier: users.trustTier,
+      role: skillCollaborators.role,
+      addedAt: skillCollaborators.addedAt,
+    })
+    .from(skillCollaborators)
+    .innerJoin(users, eq(users.id, skillCollaborators.userId))
+    .where(eq(skillCollaborators.skillId, skill.id))
+    .orderBy(skillCollaborators.addedAt);
+
+  return c.json({
+    collaborators: rows.map((r) => ({
+      username: r.username,
+      github_login: r.githubLogin,
+      trust_tier: r.trustTier,
+      role: r.role,
+      added_at: r.addedAt instanceof Date ? r.addedAt.toISOString() : String(r.addedAt),
+    })),
+  });
+});
+
+// POST /skills/:name/collaborators — add a collaborator (owner only)
+skillsRoutes.post(
+  '/skills/:name/collaborators',
+  authed,
+  zValidator('json', CollaboratorSchema),
+  async (c) => {
+    const db = c.get('db');
+    const jwt = c.get('jwtPayload');
+    const userId = jwt.sub;
+    const name = c.req.param('name');
+    const { username, role } = c.req.valid('json');
+
+    const [skill] = await db
+      .select({ id: skills.id, ownerId: skills.ownerId })
+      .from(skills)
+      .where(eq(skills.name, name))
+      .limit(1);
+
+    if (!skill) {
+      return c.json(
+        createApiError('SKILL_NOT_FOUND', { message: 'Skill not found' }),
+        ERROR_CODES.SKILL_NOT_FOUND.status,
+      );
+    }
+
+    // Only the owner can add collaborators
+    if (skill.ownerId !== userId) {
+      return c.json(
+        createApiError('FORBIDDEN', { message: 'Only the skill owner can manage collaborators' }),
+        ERROR_CODES.FORBIDDEN.status,
+      );
+    }
+
+    // Find the target user
+    const [targetUser] = await db
+      .select({ id: users.id, username: users.username })
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    if (!targetUser) {
+      return c.json(
+        createApiError('SKILL_NOT_FOUND', { message: `User "${username}" not found` }),
+        ERROR_CODES.SKILL_NOT_FOUND.status,
+      );
+    }
+
+    // Check if already a collaborator
+    const [existing] = await db
+      .select({ id: skillCollaborators.id })
+      .from(skillCollaborators)
+      .where(
+        and(eq(skillCollaborators.skillId, skill.id), eq(skillCollaborators.userId, targetUser.id)),
+      )
+      .limit(1);
+
+    if (existing) {
+      return c.json(
+        createApiError('VERSION_EXISTS', { message: `${username} is already a collaborator` }),
+        409,
+      );
+    }
+
+    await db.insert(skillCollaborators).values({
+      skillId: skill.id,
+      userId: targetUser.id,
+      role,
+    });
+
+    return c.json({ message: `Added ${username} as ${role}`, username, role }, 201);
+  },
+);
+
+// DELETE /skills/:name/collaborators/:username — remove a collaborator (owner only)
+skillsRoutes.delete('/skills/:name/collaborators/:username', authed, async (c) => {
+  const db = c.get('db');
+  const jwt = c.get('jwtPayload');
+  const userId = jwt.sub;
+  const name = c.req.param('name');
+  const targetUsername = c.req.param('username');
+
+  const [skill] = await db
+    .select({ id: skills.id, ownerId: skills.ownerId })
+    .from(skills)
+    .where(eq(skills.name, name))
+    .limit(1);
+
+  if (!skill) {
+    return c.json(
+      createApiError('SKILL_NOT_FOUND', { message: 'Skill not found' }),
+      ERROR_CODES.SKILL_NOT_FOUND.status,
+    );
+  }
+
+  if (skill.ownerId !== userId) {
+    return c.json(
+      createApiError('FORBIDDEN', { message: 'Only the skill owner can manage collaborators' }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
+
+  const [targetUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.username, targetUsername))
+    .limit(1);
+
+  if (!targetUser) {
+    return c.json(
+      createApiError('SKILL_NOT_FOUND', { message: `User "${targetUsername}" not found` }),
+      ERROR_CODES.SKILL_NOT_FOUND.status,
+    );
+  }
+
+  // Cannot remove the owner
+  const [collab] = await db
+    .select({ role: skillCollaborators.role })
+    .from(skillCollaborators)
+    .where(
+      and(eq(skillCollaborators.skillId, skill.id), eq(skillCollaborators.userId, targetUser.id)),
+    )
+    .limit(1);
+
+  if (!collab) {
+    return c.json(
+      createApiError('SKILL_NOT_FOUND', { message: `${targetUsername} is not a collaborator` }),
+      ERROR_CODES.SKILL_NOT_FOUND.status,
+    );
+  }
+
+  if (collab.role === 'owner') {
+    return c.json(
+      createApiError('FORBIDDEN', {
+        message: 'Cannot remove the owner. Transfer ownership first.',
+      }),
+      ERROR_CODES.FORBIDDEN.status,
+    );
+  }
+
+  await db
+    .delete(skillCollaborators)
+    .where(
+      and(eq(skillCollaborators.skillId, skill.id), eq(skillCollaborators.userId, targetUser.id)),
+    );
+
+  return c.json({ message: `Removed ${targetUsername} from collaborators` });
 });

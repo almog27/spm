@@ -161,6 +161,16 @@ export interface SignResponse {
   signed_at: string;
 }
 
+export interface CollaboratorsResponse {
+  collaborators: Array<{
+    username: string;
+    github_login: string;
+    trust_tier: string;
+    role: string;
+    added_at: string;
+  }>;
+}
+
 export interface RescanResponse {
   name: string;
   version: string;
@@ -413,6 +423,23 @@ export const createApiClient = (config?: ApiClientConfig) => {
       request<RescanResponse>('POST', `/skills/${encodeURIComponent(name)}/rescan`, {
         ...(version ? { version } : {}),
       }),
+
+    // -- Collaborators --
+    listCollaborators: (name: string) =>
+      request<CollaboratorsResponse>('GET', `/skills/${encodeURIComponent(name)}/collaborators`),
+
+    addCollaborator: (name: string, username: string) =>
+      request<{ message: string; username: string; role: string }>(
+        'POST',
+        `/skills/${encodeURIComponent(name)}/collaborators`,
+        { username },
+      ),
+
+    removeCollaborator: (name: string, username: string) =>
+      request<{ message: string }>(
+        'DELETE',
+        `/skills/${encodeURIComponent(name)}/collaborators/${encodeURIComponent(username)}`,
+      ),
 
     // -- Resolution --
     resolve: (skills: ResolveRequest['skills'], platform?: string) =>

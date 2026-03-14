@@ -41,6 +41,7 @@ import { registerReportCommand } from './commands/report.js';
 import { registerVerifyCommand } from './commands/verify.js';
 import { registerSignCommand } from './commands/sign.js';
 import { registerRescanCommand } from './commands/rescan.js';
+import { registerCollaboratorsCommand } from './commands/collaborators.js';
 
 const program = new Command();
 
@@ -85,6 +86,7 @@ registerPublishCommand(program);
 registerYankCommand(program);
 registerDeprecateCommand(program);
 registerReportCommand(program);
+registerCollaboratorsCommand(program);
 
 // -- Security commands --
 registerVerifyCommand(program);
