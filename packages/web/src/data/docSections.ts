@@ -64,6 +64,7 @@ export const docSections: DocSection[] = [
 ];
 
 /** Lookup slug → label for breadcrumbs */
-export const docSlugToLabel: Record<string, string> = Object.fromEntries(
-  docSections.flatMap((s) => s.items.map((i) => [i.slug, i.label])),
-);
+export const docSlugToLabel: Record<string, string> = {
+  'what-is-spm': 'What is SPM?',
+  ...Object.fromEntries(docSections.flatMap((s) => s.items.map((i) => [i.slug, i.label]))),
+};

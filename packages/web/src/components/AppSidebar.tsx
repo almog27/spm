@@ -58,7 +58,7 @@ const SidebarFooter = () => {
 const pathToActiveId = (pathname: string): string => {
   if (pathname === '/') return 'home';
   if (pathname === '/search') return 'search';
-  if (pathname === '/docs') return 'doc-group-Getting Started';
+  if (pathname === '/docs') return 'doc-what-is-spm';
   if (pathname.startsWith('/docs/')) {
     const slug = pathname.split('/')[2];
     return `doc-${slug}`;
@@ -90,8 +90,7 @@ export const AppSidebar = ({
   const currentSlug = location.pathname.startsWith('/docs/')
     ? location.pathname.split('/')[2]
     : null;
-  const activeSection =
-    location.pathname === '/docs' ? 'Getting Started' : currentSlug ? sectionForSlug(currentSlug) : null;
+  const activeSection = currentSlug ? sectionForSlug(currentSlug) : null;
 
   const sections: SidebarSection[] = [
     {
@@ -118,6 +117,14 @@ export const AppSidebar = ({
     {
       title: 'Docs',
       items: [
+        {
+          id: 'doc-what-is-spm',
+          label: 'What is SPM?',
+          onClick: () => {
+            navigate('/docs/what-is-spm');
+            onMobileClose?.();
+          },
+        },
         ...docSections.flatMap((section) => {
           const isExpanded = activeSection === section.title;
           return [
