@@ -196,6 +196,7 @@ export const Dashboard = () => {
           activity={recentActivity}
           trustTier={trustTier}
           agents={agentBreakdown}
+          username={username}
         />
       )}
       {tab === 'skills' && <SkillsTab skills={skills} />}

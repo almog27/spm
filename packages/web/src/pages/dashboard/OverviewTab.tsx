@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { ActivityItem, BarSegment, Text } from '@spm/ui';
 import { type Skill, type ActivityEvent, type AgentStat, type TrustTier } from './types';
 import { SkillRow } from './SkillRow';
@@ -11,6 +12,7 @@ export interface OverviewTabProps {
   activity: ActivityEvent[];
   trustTier: TrustTier;
   agents: AgentStat[];
+  username: string;
 }
 
 export const OverviewTab = ({
@@ -19,6 +21,7 @@ export const OverviewTab = ({
   activity,
   trustTier: tier,
   agents,
+  username,
 }: OverviewTabProps) => (
   <div style={{ display: 'flex', gap: 20 }}>
     {/* Main column */}
@@ -141,10 +144,13 @@ export const OverviewTab = ({
         >
           Quick links
         </Text>
-        {['Public profile', 'Account settings', 'API tokens', 'Publish guide'].map((label) => (
-          <a
+        {[
+          { label: 'Public profile', to: `/authors/${username}` },
+          { label: 'Publish guide', to: '/docs/authoring-best-practices' },
+        ].map(({ label, to }) => (
+          <Link
             key={label}
-            href="#"
+            to={to}
             style={{
               display: 'block',
               fontFamily: 'var(--font-sans)',
@@ -155,7 +161,7 @@ export const OverviewTab = ({
             }}
           >
             {label}
-          </a>
+          </Link>
         ))}
       </div>
     </aside>
