@@ -6,7 +6,7 @@ import {
   LegacyBreadcrumb as Breadcrumb,
   type LegacyBreadcrumbItem as BreadcrumbItem,
 } from '@spm/ui/shadcn';
-import { docSlugToLabel } from '../data/docSections';
+import { docSections, docSlugToLabel } from '../data/docSections';
 import { searchAuthors, getCategories } from '../lib/api';
 
 const ROUTE_LABELS: Record<string, string> = {
@@ -43,6 +43,10 @@ const deriveBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   if (pathname.startsWith('/docs/')) {
     const slug = decodeURIComponent(pathname.split('/')[2] ?? '');
     crumbs.push({ label: 'Docs', href: '/docs' });
+    const section = docSections.find((s) => s.items.some((i) => i.slug === slug));
+    if (section) {
+      crumbs.push({ label: section.title, href: `/docs/${section.items[0].slug}` });
+    }
     crumbs.push({ label: docSlugToLabel[slug] ?? slug });
     return crumbs;
   }
