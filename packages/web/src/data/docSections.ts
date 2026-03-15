@@ -14,11 +14,6 @@ export const docSections: DocSection[] = [
     title: 'Getting Started',
     items: [
       {
-        label: 'What is SPM?',
-        slug: 'what-is-spm',
-        desc: 'An overview of the Skills Package Manager and how it works with AI agents.',
-      },
-      {
         label: 'Installation',
         slug: 'installation',
         desc: 'Install the CLI globally and configure your environment.',
@@ -27,6 +22,16 @@ export const docSections: DocSection[] = [
         label: 'Your first skill',
         slug: 'your-first-skill',
         desc: 'Create, test, and publish a skill in under 5 minutes.',
+      },
+      {
+        label: 'Managing skills',
+        slug: 'managing-skills',
+        desc: 'Install skills globally or per-project, pin versions, and manage dependencies.',
+      },
+      {
+        label: 'Authoring best practices',
+        slug: 'authoring-best-practices',
+        desc: 'Write skills that are secure, discoverable, and well-documented.',
       },
     ],
   },
@@ -49,21 +54,6 @@ export const docSections: DocSection[] = [
         desc: 'The 3-layer scanning pipeline that protects the registry.',
       },
       { label: 'Categories', slug: 'categories', desc: 'Browse and organize skills by category.' },
-    ],
-  },
-  {
-    title: 'Guides',
-    items: [
-      {
-        label: 'Installing skills',
-        slug: 'installing-skills',
-        desc: 'Install skills globally or per-project, pin versions, and manage dependencies.',
-      },
-      {
-        label: 'Authoring best practices',
-        slug: 'authoring-best-practices',
-        desc: 'Write skills that are secure, discoverable, and well-documented.',
-      },
       {
         label: 'Agent integration',
         slug: 'agent-integration',

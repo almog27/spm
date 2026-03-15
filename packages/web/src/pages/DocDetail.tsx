@@ -2,86 +2,6 @@ import { useParams, Link } from 'react-router-dom';
 import { Text } from '@spm/ui';
 
 const docs: Record<string, { title: string; content: () => React.ReactNode }> = {
-  'what-is-spm': {
-    title: 'What is SPM?',
-    content: () => (
-      <>
-        <P>
-          <strong>SPM (Skills Package Manager)</strong> is a package manager purpose-built for AI
-          agent skills. Think of it as npm for AI agents — a central registry where developers
-          publish, discover, and install reusable skill packages that extend what agents can do.
-        </P>
-
-        <H2>The problem</H2>
-        <P>
-          AI agents are powerful, but their capabilities are limited to what's built in. Every team
-          ends up writing the same integrations — Slack bots, database connectors, file processors —
-          from scratch. There's no standard way to share, version, or trust these capabilities
-          across projects or organizations.
-        </P>
-
-        <H2>How SPM solves it</H2>
-        <P>SPM provides a complete ecosystem for agent skills:</P>
-        <UL>
-          <li>
-            <strong>Registry</strong> — A central repository at <Code>registry.skillpkg.dev</Code>{' '}
-            where skills are published and discovered
-          </li>
-          <li>
-            <strong>CLI</strong> — The <Code>spm</Code> command-line tool for installing,
-            publishing, and managing skills
-          </li>
-          <li>
-            <strong>Security</strong> — A 3-layer scanning pipeline that analyzes every published
-            skill for malicious content
-          </li>
-          <li>
-            <strong>Trust</strong> — A tiered trust system so you know who published what and how
-            much to trust it
-          </li>
-          <li>
-            <strong>Signing</strong> — Sigstore keyless signing so every package is
-            cryptographically verifiable
-          </li>
-        </UL>
-
-        <H2>How it works</H2>
-        <P>
-          A skill is a directory containing a <Code>SKILL.md</Code> manifest and supporting files.
-          When you run <Code>spm publish</Code>, the CLI packs your skill into a <Code>.skl</Code>{' '}
-          archive, signs it with Sigstore, and uploads it to the registry. The registry runs
-          security scans and makes it available for others to install.
-        </P>
-        <CodeBlock>{`# Install a skill
-spm install summarize-text
-
-# Use it in your agent
-spm list`}</CodeBlock>
-
-        <H2>Key concepts</H2>
-        <UL>
-          <li>
-            <strong>Skills</strong> — Reusable packages of agent capabilities (prompts, tools,
-            workflows)
-          </li>
-          <li>
-            <strong>Versions</strong> — Semver-versioned releases with full history
-          </li>
-          <li>
-            <strong>Trust tiers</strong> — From unverified to official, reflecting publisher
-            credibility
-          </li>
-          <li>
-            <strong>Categories</strong> — Organize skills by function (coding, data, devops, etc.)
-          </li>
-          <li>
-            <strong>Security levels</strong> — Full, basic, or none based on scan results
-          </li>
-        </UL>
-      </>
-    ),
-  },
-
   installation: {
     title: 'Installation',
     content: () => (
@@ -629,8 +549,8 @@ categories:
     ),
   },
 
-  'installing-skills': {
-    title: 'Installing skills',
+  'managing-skills': {
+    title: 'Managing skills',
     content: () => (
       <>
         <P>

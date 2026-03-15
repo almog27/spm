@@ -111,19 +111,25 @@ export const AppSidebar = ({
             onMobileClose?.();
           },
         },
-        // Show doc sub-pages when on any /docs path
+        // Show doc sub-sections when on any /docs path
         ...(isOnDocsPage
-          ? docSections.flatMap((section) =>
-              section.items.map((item) => ({
+          ? docSections.flatMap((section) => [
+              {
+                id: `group-${section.title}`,
+                label: section.title,
+                indent: 1,
+                isGroupLabel: true,
+              },
+              ...section.items.map((item) => ({
                 id: `doc-${item.slug}`,
                 label: item.label,
-                indent: 1,
+                indent: 2,
                 onClick: () => {
                   navigate(`/docs/${item.slug}`);
                   onMobileClose?.();
                 },
               })),
-            )
+            ])
           : []),
         {
           id: 'cli',

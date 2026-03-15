@@ -19,6 +19,8 @@ export interface SidebarItem {
   badgeColor?: string;
   /** Indent level for sub-items (default 0) */
   indent?: number;
+  /** Render as a non-clickable group label */
+  isGroupLabel?: boolean;
 }
 
 export interface SidebarProps {
@@ -58,6 +60,25 @@ const SectionTitle = ({ title }: { title: string }) => (
 
 const NavItem = ({ item, isActive }: { item: SidebarItem; isActive: boolean }) => {
   const [hovered, setHovered] = useState(false);
+
+  if (item.isGroupLabel) {
+    return (
+      <div
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--color-text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          padding: '12px 16px 4px',
+          paddingLeft: 16 + (item.indent ?? 0) * 14,
+        }}
+      >
+        {item.label}
+      </div>
+    );
+  }
 
   const indent = item.indent ?? 0;
   const style: React.CSSProperties = {
