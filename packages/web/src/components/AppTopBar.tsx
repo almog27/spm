@@ -1,13 +1,10 @@
-import { useRef, useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { TopBar, Text } from '@spm/ui';
+import { useLocation } from 'react-router-dom';
+import { TopBar } from '@spm/ui';
 import {
   LegacyBreadcrumb as Breadcrumb,
   type LegacyBreadcrumbItem as BreadcrumbItem,
 } from '@spm/ui/shadcn';
 import { docSections, docSlugToLabel } from '../data/docSections';
-import { useSearchAutocomplete } from '../hooks/useSearchAutocomplete';
-import { AutocompleteDropdown } from './autocomplete/AutocompleteDropdown';
 
 const ROUTE_LABELS: Record<string, string> = {
   '/': 'Home',
@@ -56,110 +53,12 @@ const deriveBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   return crumbs;
 };
 
-const TopBarSearch = () => {
-  const [query, setQuery] = useState('');
-  const [focused, setFocused] = useState(false);
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
-
-  // Debounce
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      setDebouncedQuery('');
-      return;
-    }
-    const timer = setTimeout(() => setDebouncedQuery(trimmed), 200);
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // Generic prefix autocomplete
-  const autocomplete = useSearchAutocomplete(debouncedQuery, focused);
-
-  const hasDropdown =
-    autocomplete.showDropdown && (autocomplete.items.length > 0 || autocomplete.emptyMessage);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const value = query.trim();
-    if (value) {
-      navigate(`/search?q=${encodeURIComponent(value)}`);
-      setQuery('');
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 440, position: 'relative' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: 'var(--color-bg-input)',
-          border: '1px solid var(--color-border-default)',
-          borderRadius: hasDropdown ? '8px 8px 0 0' : 8,
-          padding: '0 12px',
-        }}
-      >
-        <Text variant="body" color="muted" as="span" style={{ marginRight: 8 }}>
-          &#x2315;
-        </Text>
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setTimeout(() => setFocused(false), 200)}
-          placeholder="Search skills... (author:name, tag:keyword)"
-          style={{
-            flex: 1,
-            fontFamily: 'var(--font-sans)',
-            fontSize: 14,
-            padding: '8px 0',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--color-text-primary)',
-            outline: 'none',
-          }}
-        />
-        {query && (
-          <Text
-            variant="caption"
-            color="muted"
-            as="span"
-            style={{ cursor: 'pointer', padding: 4 }}
-            {...{
-              onClick: () => {
-                setQuery('');
-                inputRef.current?.focus();
-              },
-            }}
-          >
-            &#x2715;
-          </Text>
-        )}
-      </div>
-
-      {/* Prefix autocomplete dropdown (author:, category:, tag:) */}
-      {autocomplete.showDropdown && (
-        <AutocompleteDropdown
-          items={autocomplete.items}
-          emptyMessage={autocomplete.emptyMessage}
-          variant="compact"
-          onSelect={() => setQuery('')}
-        />
-      )}
-    </form>
-  );
-};
-
 export const AppTopBar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const { pathname } = useLocation();
 
   return (
     <TopBar
       left={<Breadcrumb items={deriveBreadcrumbs(pathname)} />}
-      center={<TopBarSearch />}
       onMenuClick={onMenuClick}
     />
   );
