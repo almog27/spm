@@ -46,20 +46,20 @@ export const Dashboard = () => {
   };
 
   const weeklyTrend: WeeklyData[] =
-    statsData?.weekly_trend.map((w) => ({
+    statsData?.weekly_trend?.map((w) => ({
       week: w.week,
       downloads: w.downloads,
     })) ?? [];
 
   const agentBreakdown: AgentStat[] =
-    statsData?.agent_breakdown.map((a) => ({
+    statsData?.agent_breakdown?.map((a) => ({
       agent: a.agent,
       pct: a.percentage,
       color: AGENT_COLORS[a.agent.toLowerCase()] ?? 'var(--color-text-dim)',
     })) ?? [];
 
   const recentActivity: ActivityEvent[] =
-    statsData?.recent_activity.map((a) => ({
+    statsData?.recent_activity?.map((a) => ({
       type: a.type as ActivityEvent['type'],
       skill: a.skill,
       version: a.version,
